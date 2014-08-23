@@ -1,0 +1,99 @@
+body {
+	text-align: center;
+	font-family: 'merriweather', serif;
+	font-weight: 300;
+	font-size: 16px;
+	background: url('cjeg.jpg') no-repeat #161616;
+	background-size: 100% auto;
+	padding: 0;
+	margin: 0;
+}
+
+.box {
+	background-color: #eee;
+	width: 360px;
+	margin: 80px auto 100px auto;
+	padding: 50px;
+	/*-moz-box-shadow: 0 0 100px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 0 100px rgba(0,0,0,0.5);
+	box-shadow: 0 0 100px rgba(0,0,0,0.5);*/
+  
+}
+h1 {
+	padding: 0;
+	margin: 0 0 20px 0;
+	font-size: 1.2em;
+	font-weight: 400;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: #444;
+}
+a {
+	transition: color 0.3s;
+	-webkit-transition: color 0.3s;
+	-moz-transition: color 0.3s;
+	color: #222;
+	text-decoration: none;
+}
+a:hover {
+	color: #d21137;
+	text-decoration: none;
+}
+.subheading {
+	font-size: 0.8em;
+	color: #777;
+	font-weight: 300;
+	line-height: 1.6em;
+	padding-bottom: 16px;
+	border-bottom: 1px solid #CCD8D1;
+	letter-spacing: 0.06em;
+	font-style: italic;
+}
+ul.links {
+	padding: 0;
+	margin: 0;
+}
+ul.links li {
+	list-style-type: none;
+	display: inline;
+}
+ul.links li a{
+	font-weight: 300;
+	text-decoration: none;
+	font-size: 0.7em;
+	margin-right: 10px;
+	border-right: 1px solid #bbb;
+	padding-right: 10px;
+}
+ul.links li.last a{
+	padding-right: 0;
+	margin-right: 0;
+	border-right: 0;
+}
+
+@media only screen and (max-width: 480px){
+  .box {
+    width: 80%;
+    padding: 30px 5%;
+	margin: 10px 2.5% 0 5%;
+	min-width: 240px;
+	}		
+	.box ul {
+		margin-top: 16px;
+	}
+	.box ul li {
+		display: block;
+		margin-bottom: 16px;
+
+	}
+	.box ul li.last {
+		display: block;
+		margin-bottom: 0px;
+	}
+	.box ul li a{
+		font-size: 0.8em;
+		padding-right: 0;
+		margin-right: 0;
+		border-right: 0;
+	}
+}
