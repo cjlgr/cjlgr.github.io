@@ -65,6 +65,17 @@ p {
     max-width: 700px;
 }
 
+p.img-text {
+    color: #777;
+    margin-bottom: 4px;
+    margin-top: 10px;
+    font-size: 0.8em;
+    text-align: left;
+}
+p.img-text span {
+    color: #745858;
+}
+
 iframe {
     margin-bottom: 30px;
 }
@@ -77,6 +88,10 @@ iframe {
     color: #FDB8B0;
 }
 
+.clear {
+    clear: both;
+}
+
 .container {
     background-color: white;
     text-align: left;
@@ -84,20 +99,42 @@ iframe {
 }
 
 .images {
-    background-image: none;
-    background-color: #222;
+    background-color: #161616;
     padding: 100px 100px 140px 100px;
     text-align: center;
 }
 
-.images img {
+.images .imgwrapper {
     width: 45%;
     margin-bottom: 10%;
+    float: left;
+    
 }
 
-.images img.odd {
+.images .imgwrapper img{
+    width: 100%;
+    float: left;
+}
+
+.images .imgwrapper a {
+    float: left;
+    margin-bottom: 12px;
+    opacity: 0.7;
+    transition: 0.3s;
+    
+}
+
+.images .imgwrapper a:hover {
+    background-color: salmon;
+    opacity: 1;
+    padding: 8px;
+}
+
+.images .imgwrapper.odd {
     margin-right: 10%;
 }
+
+
 
 @media only screen and (max-width: 480px){
     h1 {
@@ -106,7 +143,11 @@ iframe {
     h2.subheading {
         font-size: 1.3em;
     }
-    .container {
+    .container, .images {
         padding: 30px;
+    }
+    .images .imgwrapper {
+        width: 100%;
+        margin-right: 0 !important;
     }
 }

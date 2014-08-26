@@ -13,14 +13,25 @@ $( document ).ready(function() {
         
         if (response.data) {
             var even = true;
-            
+            console.log(response);
             response.data.forEach(function(rec){
                 even = !even;
                 images.push(rec.images.standard_resolution.url)
 
-                var $img = $('<img>').attr('src', rec.images.standard_resolution.url).addClass(even?'even':'odd');
-
-                var $container = $('.images').append($img);
+                var $img = $('<img>').attr('src', rec.images.standard_resolution.url);
+                var $imglink = $('<a></a>').attr('href', rec.link).attr('target', '_blank').append($img);
+                var $imgwrapper = $('<div></div>').addClass('imgwrapper').addClass(even?'even':'odd').append($imglink);
+                var $container = $('.images').append($imgwrapper);
+                
+                if (rec.comments.count > 0) {
+                    rec.comments.data.forEach(function(comment){
+                        $('<p><span>'+comment.text+' /'+comment.from.username+'</span></p>').addClass('img-text').appendTo($imgwrapper);
+                    });
+                }
+                
+                if (even) {
+                    $('.images').append($('<div></div>').addClass('clear'));
+                }
 
             });
         }
@@ -29,7 +40,7 @@ $( document ).ready(function() {
 
 $( document ).scroll(function(e) {
     var st = $( document ).scrollTop();
-    $('body').css('background-position', '0px ' + st*0.3 + 'px')
+    //$('body').css('background-position', '0px ' + st*0.3 + 'px')
     
     
 
