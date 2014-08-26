@@ -2,7 +2,7 @@ $( document ).ready(function() {
     
     var images = [];
     
-    var url = "https://api.instagram.com/v1/users/cral/media/recent/?client_id=";
+    var url = "https://api.instagram.com/v1/users/9907286/media/recent/?client_id=";
     var clientid = "7b423a9f4f9a456da99581f04703add8"
     
     $.ajax({
