@@ -1,99 +1,112 @@
 body {
-	text-align: center;
-	font-family: 'merriweather', serif;
-	font-weight: 300;
-	font-size: 16px;
-	background: url('cjeg.jpg') no-repeat #161616;
-	background-size: 100% auto;
-	padding: 0;
-	margin: 0;
+    text-align: center;
+    font-weight: 300;
+    font-size: 16px;
+    background: url('cjeg.jpg') no-repeat #161616;
+    background-size: 100% auto;
+    padding: 0;
+    margin: 0;
 }
 
-.box {
-	background-color: #eee;
-	width: 360px;
-	margin: 80px auto 100px auto;
-	padding: 50px;
-	/*-moz-box-shadow: 0 0 100px rgba(0,0,0,0.5);
-	-webkit-box-shadow: 0 0 100px rgba(0,0,0,0.5);
-	box-shadow: 0 0 100px rgba(0,0,0,0.5);*/
-  
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Roboto Condensed', sans-serif;
 }
-h1 {
-	padding: 0;
-	margin: 0 0 20px 0;
-	font-size: 1.2em;
-	font-weight: 400;
-	letter-spacing: 0.15em;
-	text-transform: uppercase;
-	color: #444;
-}
+
+
 a {
-	transition: color 0.3s;
-	-webkit-transition: color 0.3s;
-	-moz-transition: color 0.3s;
-	color: #222;
-	text-decoration: none;
+    transition: color 0.3s;
+    -webkit-transition: color 0.3s;
+    -moz-transition: color 0.3s;
+    color: #FA8072;
+    text-decoration: none;
 }
 a:hover {
-	color: #d21137;
-	text-decoration: none;
+    color: #C25548;
+    text-decoration: none;
 }
-.subheading {
-	font-size: 0.8em;
-	color: #777;
-	font-weight: 300;
-	line-height: 1.6em;
-	padding-bottom: 16px;
-	border-bottom: 1px solid #CCD8D1;
-	letter-spacing: 0.06em;
-	font-style: italic;
+
+h1 {
+    padding: 0;
+    margin: 0 0 10px 0;
+    font-size: 4.2em;
+    line-height: 1em;
+    font-weight: 400;
+    color: #fff;
+    margin-top: 50px;
+    margin-bottom: 20px;
 }
-ul.links {
-	padding: 0;
-	margin: 0;
+
+h2.subheading {
+    font-size: 1.7em;
+    color: white;
+    font-weight: 300;
+    line-height: 1.2em;
+    margin-top: 0;
+    margin-bottom: 50px;
 }
-ul.links li {
-	list-style-type: none;
-	display: inline;
+
+h3 {
+    font-weight: 300;
+    margin-top: 0;
+    margin-bottom: 0px;
+    font-size: 1.4em;
 }
-ul.links li a{
-	font-weight: 300;
-	text-decoration: none;
-	font-size: 0.7em;
-	margin-right: 10px;
-	border-right: 1px solid #bbb;
-	padding-right: 10px;
+
+h3 span {
+    border-bottom: 5px solid salmon;
+    padding-bottom: 4px;
 }
-ul.links li.last a{
-	padding-right: 0;
-	margin-right: 0;
-	border-right: 0;
+
+p {
+    color: #555;
+    margin-bottom: 30px;
+    margin-top: 20px;
+    font-family: 'Istok Web', sans-serif;
+    max-width: 700px;
+}
+
+iframe {
+    margin-bottom: 30px;
+}
+
+.subheading a {
+    color: salmon;
+}
+
+.subheading a:hover {
+    color: #FDB8B0;
+}
+
+.container {
+    background-color: white;
+    text-align: left;
+    padding: 70px 100px 60px 100px;
+}
+
+.images {
+    background-image: none;
+    background-color: #222;
+    padding: 100px 100px 140px 100px;
+    text-align: center;
+}
+
+.images img {
+    width: 45%;
+    margin-bottom: 10%;
+}
+
+.images img.odd {
+    margin-right: 10%;
 }
 
 @media only screen and (max-width: 480px){
-  .box {
-    width: 80%;
-    padding: 30px 5%;
-	margin: 10px 2.5% 0 5%;
-	min-width: 240px;
-	}		
-	.box ul {
-		margin-top: 16px;
-	}
-	.box ul li {
-		display: block;
-		margin-bottom: 16px;
-
-	}
-	.box ul li.last {
-		display: block;
-		margin-bottom: 0px;
-	}
-	.box ul li a{
-		font-size: 0.8em;
-		padding-right: 0;
-		margin-right: 0;
-		border-right: 0;
-	}
+    h1 {
+        font-size: 3em;
+    }
+    h2.subheading {
+        font-size: 1.3em;
+    }
+    .container {
+        padding: 30px;
+    }
 }
