@@ -1,0 +1,148 @@
+// Rounds all the corners of a box
+@mixin border-radius($radius, $clip: padding-box)
+  -webkit-border-radius:  $radius
+  -moz-border-radius:     $radius
+  -o-border-radius:       $radius
+  border-radius:          $radius
+  -webkit-background-clip:  $clip
+  -mox-background-clip:     $clip
+  -o-background-clip:       $clip
+  background-clip:          $clip
+
+// Rounds a box's corners on one side
+@mixin border-radius-side($radius, $side, $clip: padding-box)
+  @if $side == 'top' or $side == 'bottom'
+    -webkit-border-#{$side}-left-radius:    $radius
+    -webkit-border-#{$side}-right-radius:   $radius
+  @else
+    -webkit-border-top-#{$side}-radius:     $radius
+    -webkit-border-bottom-#{$side}-radius:  $radius
+
+  -webkit-background-clip:  $clip
+  -mox-background-clip:     $clip
+  -o-background-clip:       $clip
+  background-clip:          $clip
+
+// Creates a linear gradient between two colors
+@mixin linear-gradient($from, $to)
+  background-color: $to
+  background-image: -moz-linear-gradient($from, $to)
+  background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, $from),color-stop(1, $to))
+  background-image: -webkit-linear-gradient($from, $to)
+  background-image: -o-linear-gradient($from, $to)
+  background-image:  linear-gradient($from, $to)
+
+@mixin three-color-gradient($top, $middle, $bottom)
+  background: $middle
+  background: -moz-linear-gradient(top,  $top 0%, $middle 20%, $middle 80%, $bottom 100%)
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,$top), color-stop(20%,$middle), color-stop(80%,$middle), color-stop(100%,$bottom))
+  background: -webkit-linear-gradient(top,  $top 0%,$middle 20%,$middle 80%,$bottom 100%)
+  background: -o-linear-gradient(top,  $top 0%,$middle 20%,$middle 80%,$bottom 100%)
+  background: -ms-linear-gradient(top,  $top 0%,$middle 20%,$middle 80%,$bottom 100%)
+  background: linear-gradient(top,  $top 0%,$middle 20%,$middle 80%,$bottom 100%)
+  @if $top == $bottom and $middle != ''
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#{$top}', endColorstr='#{$middle}')
+      -ms-filter: quote(progid:DXImageTransform.Microsoft.gradient(startColorstr='#{$top}', endColorstr='#{$middle}'))
+  @else
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#{$top}', endColorstr='#{$bottom}')
+      -ms-filter: quote(progid:DXImageTransform.Microsoft.gradient(startColorstr='#{$top}', endColorstr='#{$bottom}'))
+
+// Adds shadow to a box
+@mixin box-shadow($arguments)
+  -moz-box-shadow:    $arguments
+  -o-box-shadow:      $arguments
+  -webkit-box-shadow: $arguments
+  box-shadow:         $arguments
+
+// Adds two shadows to a box
+@mixin double-box-shadow($arguments, $arguments2)
+  -moz-box-shadow:    $arguments, $arguments2
+  -o-box-shadow:      $arguments, $arguments2
+  -webkit-box-shadow: $arguments, $arguments2
+  box-shadow:         $arguments, $arguments2
+
+
+// Adds shadow to text
+@mixin text-shadow($arguments)
+  -moz-text-shadow:    $arguments
+  -o-text-shadow:      $arguments
+  -webkit-text-shadow: $arguments
+  text-shadow:         $arguments
+
+// Add transitions
+@mixin transition($args)
+  -webkit-transition: $args
+  -moz-transition:    $args
+  -o-transition:      $args
+  -ms-transition:     $args
+  transition:         $args
+
+@mixin no-transition()
+  -moz-transition: none !important
+  -webkit-transition: none !important
+  -o-transition: color 0 ease-in !important
+  transition: none !important
+
+// Rotate the object the given number of degrees
+@mixin rotate($angle)
+  -webkit-transform: rotate($angle)
+  -moz-transform:    rotate($angle)
+  -o-transform:      rotate($angle)
+  transform:         rotate($angle)
+
+// Creates the illusion of "lifted" corners
+@mixin bendy-shadow($width, $angle: 5deg, $color: rgba(#333, 0.5))
+  position: relative
+  z-index: 1
+  @include box-shadow(0 7px 5px -5px $color)
+
+  &:before, &:after
+    content: ""
+    position: absolute
+    bottom: 6px
+    width: $width / 2
+    height: 10px
+    z-index: -1
+    @include box-shadow(0 10px 10px 1px $color)
+
+  &:before
+    left: 0px
+    @include rotate(-$angle)
+
+  &:after
+    right: 0px
+    @include rotate($angle)
+
+// Icon sprite
+@mixin icon-sprite($x, $y, $height, $width)
+  background: url(../gfx/icon-sprite.png) $x $y no-repeat
+  content: ""
+  display: inline-block
+  height: $height
+  margin: 0
+  width: $width
+
+// Button with rounded corners
+@mixin button-rounded($radius, $h, $ptb, $plr, $bg, $color, $bga, $colora)
+  @include border-radius($radius)
+  background: $bg
+  border: none
+  color: $color
+  height: $h
+  line-height: $h
+  padding: $ptb $plr
+  @include box-shadow(0 1px 2px 1px rgba(0, 0, 0, 0.1))
+  &:hover
+    background: $bga
+    border: none
+  &:active,
+  &.active,
+  &.lt-active
+    background: $bga
+    border: 0
+    color: $colora
+    @include box-shadow(inset 0 1px 2px 1px rgba(0, 0, 0, 0.3))
+    &:hover
+      background: $bga
+      border: none
+
