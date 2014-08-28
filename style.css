@@ -124,6 +124,7 @@ body.top .container {
     background-color: #161616;
     padding: 100px 100px 140px 100px;
     text-align: center;
+    min-height: 200px;
 }
 
 .images .imgwrapper {
@@ -167,6 +168,9 @@ body.top .container {
     }
     .container, .images {
         padding: 30px;
+    }
+    .container {
+        padding-bottom: 110px;
     }
     .images .imgwrapper {
         width: 100%;
