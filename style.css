@@ -143,14 +143,14 @@ body.top .container {
     float: left;
     margin-bottom: 12px;
     opacity: 0.7;
-    transition: 0.3s;
+    transition: 0.15s;
     
 }
 
 .images .imgwrapper a:hover {
-    background-color: salmon;
+    /*background-color: salmon;*/
     opacity: 1;
-    padding: 8px;
+    /*padding: 8px;*/
 }
 
 .images .imgwrapper.odd {
