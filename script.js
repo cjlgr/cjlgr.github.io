@@ -6,7 +6,7 @@ $( document ).ready(function() {
     //var url = "https://api.instagram.com/v1/users/3/media/recent/?client_id=";
     
     var clientid = "7b423a9f4f9a456da99581f04703add8"
-    
+    /*
     $.ajax({
         url: url + clientid,
         context: document.body,
@@ -39,6 +39,7 @@ $( document ).ready(function() {
             });
         }
     });
+    */
 });
 
 $( document ).scroll(function(e) {
