@@ -136,45 +136,22 @@ body.top .container {
     background-color: #fff;
 }
 
-.images {
-    background-color: #161616;
-    padding: 100px 100px 140px 100px;
-    text-align: center;
-    min-height: 200px;
+
+.icons {
+  margin-top: 70px;
 }
 
-.images .imgwrapper {
-    width: 45%;
-    margin-bottom: 10%;
-    float: left;
-    
+.icons a {
+  display: inline-block;
+  vertical-align: bottom;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
-.images .imgwrapper img{
-    width: 100%;
-    float: left;
+.icons img {
+  height: 80px;
+  width: auto;
 }
-
-.images .imgwrapper a {
-    float: left;
-    margin-bottom: 12px;
-    opacity: 0.7;
-    transition: 0.15s;
-    
-}
-
-.images .imgwrapper a:hover {
-    /*background-color: salmon;*/
-    opacity: 1;
-    /*padding: 8px;*/
-}
-
-.images .imgwrapper.odd {
-    margin-right: 10%;
-}
-
-
-
 
   
 body.hopsop {
