@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <link href='https://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link href="build/main.css" rel="stylesheet" type="text/css">
+
+  <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="build/console.min.js"></script>
+
+</head>
+<body class="dark">
+  <article class="container">
+
+    <section class="row main-row">
+      <div class="col-md-6 col-md-offset-3 main-col">
+          <div class="input-wrapper editor">
+            <div class="input-wrapper-inner relative">
+              <textarea autocapitalize="off" autocorrect="off" id="input" rows="6" spellcheck="false"></textarea>
+              <span class="currentlyLoaded absolute pin-top pin-right"></span>
+              <a class="btn btn-default btn-lg replayLast absolute pin-bottom pin-left" href="#"><i class="fa fa-repeat"></i></a>
+              <a class="btn btn-default btn-lg clearAll absolute pin-bottom pin-right" href="#"><i class="fa fa-times"></i></a>
+            </div>
+            <div class="row">
+              <div class="col-xs-12 pl-xs pr-xs">
+                <a class="btn btn-code btn-default mb-xs insertParStart" href="#">(</a>
+                <a class="btn btn-code btn-default mb-xs insertParEnd" href="#">)</a>
+                <a class="btn btn-code btn-default mb-xs insertCurlyStart" href="#">{</a>
+                <a class="btn btn-code btn-default mb-xs insertCurlyEnd" href="#">}</a>
+                <a class="btn btn-code btn-default mb-xs insertBracketStart" href="#">[</a>
+                <a class="btn btn-code btn-default mb-xs insertBracketEnd" href="#">]</a>
+                <a class="btn btn-code btn-default mb-xs insertAssign" href="#">=</a>
+                <a class="btn btn-code btn-plain mb-xs pull-right pasteOptions" role="button" data-toggle="collapse" href="#collapsePasteCode" aria-expanded="false" aria-controls="collapsePasteCode"><i class="fa fa-plus"></i></a>
+                <div class="clear collapse" id="collapsePasteCode">
+                  <a class="btn btn-code btn-default mb-xs insertFor" href="#">For-loop</a>
+                  <a class="btn btn-code btn-default mb-xs insertIfElse" href="#">If/Else</a>
+                  <a class="btn btn-code btn-default mb-xs insertConsoleLog" href="#">console.log()</a>
+                </div>
+              </div>
+            </div>
+            <div class="notification pin-top absolute"><span><i class="fa fa-check"></i> Saved!</span></div>
+          </div>
+            <div class="row clear">
+              <div class="col-xs-4 pl-xs pr-none">
+                <div class="block">
+                  <a class="btn btn-default btn-lg btn-full-width dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-floppy-o"></i>&nbsp;<span class="caret"></span></a>
+                  <ul class="dropdown-menu save-menu">
+                    <li><a href="#" id="newBtn">New</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a class="disabled" href="#" id="loadBtn" data-toggle="modal" data-target="#loadModal">Open &hellip;</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#" id="saveBtn">Save</a></li>
+                    <li><a href="#" id="saveAsBtn" data-toggle="modal" data-target="#saveModal">Save as &hellip;</a></li>
+                  </ul>
+                </div>
+              </div></i>
+              <div class="col-xs-4 pl-xs pr-none">
+                <div class="block">
+                  <a class="btn btn-default btn-lg btn-full-width dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-adjust"></i>&nbsp;<span class="caret"></span></a>
+                  <ul class="dropdown-menu save-menu">
+                    <li><a href="#" id="themeLight"><i class="fa fa-check" style="visibility: hidden;"></i> Light theme</a></li>
+                    <li><a href="#" id="themeDark"><i class="fa fa-check"></i> Dark theme</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-xs-4 pl-xs pr-xs"><a class="btn btn-primary btn-lg btn-full-width execute" href="#"><i class="fa fa-play"></i></a></div>
+            </div>
+
+        <div id="output"><div class="output-inner"></div></div>
+
+      </div>
+    </section>
+  </article>
+
+
+  <!-- Save modal -->
+<div class="modal fade" id="saveModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Save script</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="scriptNameInput">Script name</label>
+            <input type="email" class="form-control" id="scriptNameInput" placeholder="">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveAsSave">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save modal -->
+<div class="modal fade" id="loadModal" tabindex="-1" role="dialog">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h4 class="modal-title">Scripts</h4>
+    </div>
+    <div class="modal-body no-padding">
+      <ul class="storedscripts list-unstyled">
+
+      </ul>
+    </div>
+    <div class="modal-footer clear">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    </div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
