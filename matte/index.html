@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>123 Matte</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="gfx/icon.png">
+  <link href="style/master.css" rel="stylesheet" type="text/css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
+  <script
+  src="https://code.jquery.com/jquery-3.2.1.js"
+  integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="menu">
+    <h3 style="margin-bottom: 2px;" class="text-center">Välkommen till</h3>
+    <h1 style="margin-top: 2px;" class="text-center">mattespelet!</h1>
+    <br>
+    <div class="text-center"><input id="checkAdd" type="checkbox" checked><label for="checkAdd"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Plus (addition)</label></div>
+    <div class="text-center"><input id="checkSub" type="checkbox" checked><label for="checkSub"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Minus (subtraktion)</label></div>
+    <div class="text-center"><input id="checkMult" type="checkbox" checked><label for="checkMult"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Gånger (multiplikation)</label></div>
+    <br><br><br>
+    <button class="btn-big" id="trainingButton">Träning</button>
+    <br>
+    <button class="btn-big" id="contestButton">Tävling</button>
+    <br><br><br>
+    <div class="difficulty">
+      <div class="radio-wrapper"><input name="difficulty" value="easy" id="radioEasy" type="radio"><div class="meter meter-low"></div><label for="radioEasy">Rookie</label></div>
+      <div class="radio-wrapper"><input name="difficulty" value="medium" id="radioMedium" type="radio" checked><div class="meter meter-medium"></div><label for="radioMedium">Mellan</label></div>
+      <div class="radio-wrapper"><input name="difficulty" value="hard" id="radioHard" type="radio"><div class="meter meter-high"></div><label for="radioHard">Mästare</label></div>
+    </div>
+  </div>
+  <div id="game">
+    <button class="btn-transparent" id="back"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
+    <div id="questionText"></div>
+    <div id="answerWrapper">
+      <input type="number" id="answerField">
+      <button class="btn-confirm" id="answerButton">Ok</button>
+      <div id="counter" class="counter-wrapper">
+        <div id="counterbar"></div>
+      </div>
+      <div id="help"></div>
+      <p id="feedback"></p>
+    </div>
+
+    <span class="score-wrapper">Poäng: <span id="score">0</span></span>
+
+  </div>
+
+  <script src="script/script.js"></script>
+
+</body>
+</html>
