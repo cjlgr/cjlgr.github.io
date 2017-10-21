@@ -1,0 +1,20 @@
+{"frames": 
+  [
+    {
+    	"filename": "btn-start-normal",
+    	"frame": {"x":0,"y":0,"w":90,"h":90},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":90,"h":90},
+    	"sourceSize": {"w":90,"h":90}
+    },
+    {
+    	"filename": "btn-start-hover",
+    	"frame": {"x":90,"y":0,"w":90,"h":90},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":90,"h":90},
+    	"sourceSize": {"w":90,"h":90}
+    }
+  ]
+}
