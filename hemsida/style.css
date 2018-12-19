@@ -1,0 +1,32 @@
+body {
+    background-color: black;
+    text-align: center;
+    padding: 100px 0;
+    font-size: 26px;
+    min-width: 320px;
+}
+
+h1 {
+    color: gold;
+}
+
+p {
+    color: rgb(91, 91, 245);
+    margin: 0 auto 20px auto;
+    max-width: 600px;
+    width: 100%;
+    display: block;
+}
+
+a {
+    color: white;
+}
+
+.btn {
+    display: inline-block;
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 10000px;
+}
