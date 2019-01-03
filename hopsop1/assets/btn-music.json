@@ -1,0 +1,20 @@
+{"frames": 
+  [
+    {
+    	"filename": "btn-music-normal",
+    	"frame": {"x":0,"y":0,"w":126,"h":30},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":126,"h":30},
+    	"sourceSize": {"w":126,"h":30}
+    },
+    {
+    	"filename": "btn-music-hover",
+    	"frame": {"x":126,"y":0,"w":126,"h":30},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":126,"h":30},
+    	"sourceSize": {"w":126,"h":30}
+    }
+  ]
+}
