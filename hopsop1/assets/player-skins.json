@@ -1,0 +1,100 @@
+{"frames": 
+  [
+    {
+    	"filename": "skin1",
+    	"frame": {"x":0,"y":0,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin2",
+    	"frame": {"x":340,"y":0,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin3",
+    	"frame": {"x":680,"y":0,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin4",
+    	"frame": {"x":1020,"y":0,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin5",
+    	"frame": {"x":1360,"y":0,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin6",
+    	"frame": {"x":1700,"y":0,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin1locked",
+    	"frame": {"x":0,"y":543,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin2locked",
+    	"frame": {"x":340,"y":543,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin3locked",
+    	"frame": {"x":680,"y":543,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin4locked",
+    	"frame": {"x":1020,"y":543,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin5locked",
+    	"frame": {"x":1360,"y":543,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    },
+    {
+    	"filename": "skin6locked",
+    	"frame": {"x":1700,"y":543,"w":340,"h":543},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":340,"h":543},
+    	"sourceSize": {"w":340,"h":543}
+    }
+  ]
+}

@@ -38,8 +38,8 @@ BasicGame.Boot.prototype = {
             this.scale.pageAlignVertically = true;
             this.scale.forceOrientation(true, true);
             this.scale.setResizeCallback(this.gameResized, this);
-            this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
-            this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
+            //this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
+            //this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
             this.scale.setScreenSize(true);
             this.scale.refresh();
         }
@@ -49,12 +49,8 @@ BasicGame.Boot.prototype = {
     preload: function () {
 
         //  Here we load the assets required for our preloader (in this case a background and a loading bar)
-        if (this.world.height<1000) {
-          this.load.image('preloaderBackground', 'images/titlescreen-4-3.jpg');
-        } else {
-          this.load.image('preloaderBackground', 'images/titlescreen-16-9.jpg');
-
-        }
+        this.load.image('preloaderBackground', 'images/titlescreen-16-9.jpg');
+          
         this.load.image('preloaderBar', 'images/preloadr_bar.png');
 
     },

@@ -1,90 +1,98 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<title>HOPSOP</title>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="chrome=1, IE=9">
-	<meta name="format-detection" content="telephone=yes">
-	<meta name="HandheldFriendly" content="true" />
-	<meta name="robots" content="noindex,nofollow" />
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-	<meta name="apple-mobile-web-app-title" content="HOPSOP">
-	<!--meta name="viewport" content="initial-scale=1 maximum-scale=1 user-scalable=0 minimal-ui" /-->
+    <title>Hopsop</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=9">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="robots" content="noindex,nofollow"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <meta name="apple-mobile-web-app-title" content="Hopsop">
+    <meta name="viewport"
+          content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi"/>
 
-	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="css/stylesheet.css" type="text/css" charset="utf-8"/>
 
-	<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-	<!-- non-retina iPhone pre iOS 7 -->
-	<link rel="apple-touch-icon" sizes="57x57" href="icons/app_icon_57x57.png">
-	<link rel="apple-touch-icon" sizes="60x60" href="icons/app_icon_60x60.png">
-	<!-- non-retina iPad pre iOS 7 -->
-	<link rel="apple-touch-icon" sizes="72x72" href="icons/app_icon_72x72.png">
-	<!-- non-retina iPad iOS 7 -->
-	<link rel="apple-touch-icon" sizes="76x76" href="icons/app_icon_76x76.png">
-	<!-- retina iPhone pre iOS 7 -->
-	<link rel="apple-touch-icon" sizes="114x114" href="icons/app_icon_114x114.png">
-	<!-- retina iPhone iOS 7 -->
-	<link rel="apple-touch-icon" sizes="120x120" href="icons/app_icon_120x120.png">
-	<!-- retina iPad pre iOS 7 -->
-	<link rel="apple-touch-icon" sizes="144x144" href="icons/app_icon_144x144.png">
-	<!-- retina iPad iOS 7 -->
-	<link rel="apple-touch-icon" sizes="152x152" href="icons/app_icon_152x152.png">
-	<link rel="apple-touch-icon" sizes="256x256" href="icons/app_icon_256x256.png">
-	<link rel="apple-touch-icon" sizes="512x512" href="icons/app_icon_512x512.png">
-	<link rel="apple-touch-icon" sizes="1024x1024" href="icons/app_icon_1024x1024.png">
-
-	<link rel="stylesheet" href="css/stylesheet.css" type="text/css" charset="utf-8" />
-
-	<script src="js/phaser.js"></script>
-	<script src="src/Boot.js"></script>
-	<script src="src/Preloader.js?1"></script>
-	<script src="src/MainMenu.js"></script>
-	<script src="src/Game.js"></script>
-
+    <!-->script src="src/admob.js"></script-->
+    <!--script src="src/gameservices.js"></script-->
+    <!--script src="cordova.js"></script-->
+    <script src="js/phaser.js"></script>
+    <script src="src/Boot.js"></script>
+    <script src="src/Preloader.js"></script>
+    <script src="src/MainMenu.js"></script>
+    <script src="src/Game.js"></script>
+    <script src="src/Music.js"></script>
 
 </head>
 <style>
-  body {
-    background-color: #000000;
-  }
+    body {
+        background-color: #000000;
+    }
 </style>
 <body>
 
-	<div id="game"></div>
-	<div id="orientation"></div>
+<div id="game"></div>
 
 <script type="text/javascript">
-(function () {
 
-	//	We're using a game size of 1024 x 768 here, but you can use whatever you feel makes sense for your game of course.
-	//var game = new Phaser.Game(640, 1136, Phaser.AUTO, 'game');
-	// hoops - should not be 640 * 960
-	//alert(window.innerWidth + ' x ' + window.innerHeight);
-	//var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'game');
+    // Make game global
+    var game;
 
+    var useCordova = false;
 
-	// get dimensions of the window considering retina displays
-  var w = Math.min(window.innerWidth * window.devicePixelRatio, 640),
-      h = Math.min(window.innerHeight * window.devicePixelRatio, 1136);
+    var bootPhaser = function () {
+        var w = 640,
+                h = 1136;
+        game = new Phaser.Game(w, h, Phaser.AUTO, 'game');
 
-  // simply pass them in
-  var game = new Phaser.Game(w, h, Phaser.AUTO, 'game');
+        //	Add states
+        game.state.add('Boot', BasicGame.Boot);
+        game.state.add('Preloader', BasicGame.Preloader);
+        game.state.add('MainMenu', BasicGame.MainMenu);
+        game.state.add('Game', BasicGame.Game);
 
-	
+        // Start booting
+        game.state.start('Boot');
+    }
 
-	//	Add the States your game has.
-	//	You don't have to do this in the html, it could be done in your Boot state too, but for simplicity I'll keep it here.
-	game.state.add('Boot', BasicGame.Boot);
-	game.state.add('Preloader', BasicGame.Preloader);
-	game.state.add('MainMenu', BasicGame.MainMenu);
-	game.state.add('Game', BasicGame.Game);
+    if (!useCordova) {
+        bootPhaser();
+    }
 
-	//	Now start the Boot state.
-	game.state.start('Boot');
+    (function () {
 
-})();
+        // Prevent back button
+        document.addEventListener('deviceready', function () {
+
+            if (StatusBar) { // available via plugin
+                StatusBar.hide();
+            }
+
+            document.addEventListener('backbutton', onBackKeyDown, false);
+            function onBackKeyDown(e) {
+                if (allowBack !== true) {
+                    e.preventDefault();
+                }
+            }
+
+            // pause game when in background
+            document.addEventListener('pause', gamePause, false);
+            function gamePause(e) {
+                BasicGame.Game.prototype.bgPause(game);
+            }
+
+            // resume game
+            document.addEventListener('resume', gameResume, false);
+            function gameResume(e) {
+                BasicGame.Game.prototype.bgResume(game);
+            }
+
+            bootPhaser();
+        });
+    })();
 </script>
-
 </body>
 </html>

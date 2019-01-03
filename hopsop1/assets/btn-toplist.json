@@ -1,0 +1,20 @@
+{"frames": 
+  [
+    {
+    	"filename": "btn-toplist-normal",
+    	"frame": {"x":0,"y":0,"w":325,"h":82},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":325,"h":82},
+    	"sourceSize": {"w":325,"h":82}
+    },
+    {
+    	"filename": "btn-toplist-hover",
+    	"frame": {"x":325,"y":0,"w":325,"h":82},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":325,"h":82},
+    	"sourceSize": {"w":325,"h":82}
+    }
+  ]
+}

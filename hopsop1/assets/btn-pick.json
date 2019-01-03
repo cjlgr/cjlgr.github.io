@@ -1,0 +1,20 @@
+{"frames": 
+  [
+    {
+    	"filename": "btn-pick-normal",
+    	"frame": {"x":0,"y":0,"w":325,"h":142},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":325,"h":142},
+    	"sourceSize": {"w":325,"h":142}
+    },
+    {
+    	"filename": "btn-pick-hover",
+    	"frame": {"x":325,"y":0,"w":325,"h":142},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":325,"h":142},
+    	"sourceSize": {"w":325,"h":142}
+    }
+  ]
+}
