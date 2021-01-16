@@ -1,0 +1,98 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Hopsop</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=9">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="robots" content="noindex,nofollow"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <meta name="apple-mobile-web-app-title" content="Hopsop">
+    <meta name="viewport"
+          content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi"/>
+
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="css/stylesheet.css" type="text/css" charset="utf-8"/>
+
+    <!-->script src="src/admob.js"></script-->
+    <!--script src="src/gameservices.js"></script-->
+    <!--script src="cordova.js"></script-->
+    <script src="js/phaser.js"></script>
+    <script src="src/Boot.js"></script>
+    <script src="src/Preloader.js"></script>
+    <script src="src/MainMenu.js"></script>
+    <script src="src/Game.js"></script>
+    <script src="src/Music.js"></script>
+
+</head>
+<style>
+    body {
+        background-color: #000000;
+    }
+</style>
+<body>
+
+<div id="game"></div>
+
+<script type="text/javascript">
+
+    // Make game global
+    var game;
+
+    var useCordova = false;
+
+    var bootPhaser = function () {
+        var w = 640,
+                h = 1136;
+        game = new Phaser.Game(w, h, Phaser.AUTO, 'game');
+
+        //	Add states
+        game.state.add('Boot', BasicGame.Boot);
+        game.state.add('Preloader', BasicGame.Preloader);
+        game.state.add('MainMenu', BasicGame.MainMenu);
+        game.state.add('Game', BasicGame.Game);
+
+        // Start booting
+        game.state.start('Boot');
+    }
+
+    if (!useCordova) {
+        bootPhaser();
+    }
+
+    (function () {
+
+        // Prevent back button
+        document.addEventListener('deviceready', function () {
+
+            if (StatusBar) { // available via plugin
+                StatusBar.hide();
+            }
+
+            document.addEventListener('backbutton', onBackKeyDown, false);
+            function onBackKeyDown(e) {
+                if (allowBack !== true) {
+                    e.preventDefault();
+                }
+            }
+
+            // pause game when in background
+            document.addEventListener('pause', gamePause, false);
+            function gamePause(e) {
+                BasicGame.Game.prototype.bgPause(game);
+            }
+
+            // resume game
+            document.addEventListener('resume', gameResume, false);
+            function gameResume(e) {
+                BasicGame.Game.prototype.bgResume(game);
+            }
+
+            bootPhaser();
+        });
+    })();
+</script>
+</body>
+</html>

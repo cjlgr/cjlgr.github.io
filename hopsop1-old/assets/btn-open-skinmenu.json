@@ -1,0 +1,20 @@
+{"frames": 
+  [
+    {
+    	"filename": "btn-skinmenu-normal",
+    	"frame": {"x":0,"y":0,"w":114,"h":127},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":114,"h":127},
+    	"sourceSize": {"w":114,"h":127}
+    },
+    {
+    	"filename": "btn-skinmenu-hover",
+    	"frame": {"x":114,"y":0,"w":114,"h":127},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":114,"h":127},
+    	"sourceSize": {"w":114,"h":127}
+    }
+  ]
+}

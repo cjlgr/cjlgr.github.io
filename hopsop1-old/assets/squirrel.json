@@ -1,0 +1,20 @@
+{"frames": 
+  [
+    {
+    	"filename": "squirrel-normal",
+    	"frame": {"x":0,"y":0,"w":200,"h":79},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":200,"h":79},
+    	"sourceSize": {"w":200,"h":79}
+    },
+    {
+    	"filename": "squirrel-trans",
+    	"frame": {"x":0,"y":79,"w":200,"h":79},
+    	"rotated": false,
+    	"trimmed": true,
+    	"spriteSourceSize": {"x":0,"y":0,"w":200,"h":79},
+    	"sourceSize": {"w":200,"h":79}
+    }
+  ]
+}
