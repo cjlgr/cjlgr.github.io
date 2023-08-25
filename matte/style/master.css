@@ -136,15 +136,17 @@ button.btn-confirm.btn-small-3d:active {
 
 
 
-button.btn-transparent:hover {
-  color: #ddd;
-  
-}
+
 button.btn-transparent {
   background-color: transparent;
   padding-left: 0;
   border: 0;
   outline: 0;
+  color: #333;
+}
+button.btn-transparent:hover {
+  color: #ddd;
+  
 }
 
 .counter-wrapper {
