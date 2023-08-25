@@ -1,12 +1,18 @@
 body {
-  background-color: #736e00;
+  background-color: #757571;
   color: #111111;
   font-size: 1.2em;
-  font-family: 'Inconsolata', monospace;
+  font-family: 'Concert One', cursive;
+
 }
 
 h1, h2, h3, h4, h5, h6, legend, label {
-  font-family: Helvetica, sans-serif; }
+  font-family: 'Concert One', cursive;
+}
+
+h1 {
+  font-size: 52px;
+}
 
 a {
   color: #00aacc;
@@ -38,10 +44,36 @@ button {
   padding: 8px 20px;
   font-size: 1em;
   background-color: #a3fbff;
-  border-radius: 0;
-  outline: 0;
   border: 0;
+  border-radius: 3px;
+  outline: 0;
+  transition: 0.01s;
+  font-family: 'Concert One', cursive;
+
 }
+button:hover {
+  background-color: #c5fcff;
+  cursor: pointer;
+}
+
+button.btn-3d {
+  border-bottom: 10px solid #00aacc;
+  box-shadow: 0px 12px 4px 0px rgba(0,0,0,0.2);
+}
+button.btn-3d:hover {
+  background-color: #c5fcff;
+  border-bottom: 10px solid #11c2e6;
+  cursor: pointer;
+}
+button.btn-3d:active {
+  background-color: #c5fcff;
+  border-bottom: 2px solid #17bfe0;
+  position: relative;
+  margin-top: 8px !important;
+  box-shadow: 0px 4px 4px 0px rgba(0,0,0,0.2);
+}
+
+
 
 button.btn-big {
   display: block;
@@ -60,10 +92,54 @@ button.btn-confirm {
   font-size: 0.9em;
 }
 
+
 button:disabled.btn-confirm {
   opacity: 0.5;
 }
 
+
+
+button.btn-small-3d {
+  height: 44px;
+  box-shadow: 0px 5px 4px 0px rgba(0,0,0,0.2);
+  border-bottom: 4px solid #00aacc;
+}
+button.btn-small-3d:hover {
+  cursor: pointer;
+  background-color: #c5fcff;
+  border-bottom: 4px solid #11c2e6;
+}
+button.btn-small-3d:active {
+  background-color: #c5fcff;
+  border-bottom: 1px solid #17bfe0;
+  position: relative;
+  margin-top: 4px !important;
+  box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.2);
+  height: 40px;
+}
+
+
+button.btn-confirm.btn-small-3d {
+  height: 38px;
+  border-bottom: 4px solid #279a00;
+}
+button.btn-confirm.btn-small-3d:hover {
+  background-color: #46e810;
+  border-bottom: 4px solid rgb(62, 181, 23);
+}
+button.btn-confirm.btn-small-3d:active {
+  background-color: #49ce1d;
+  border-bottom: 1px solid #3fb618;
+  height: 33px;
+}
+
+
+
+
+button.btn-transparent:hover {
+  color: #ddd;
+  
+}
 button.btn-transparent {
   background-color: transparent;
   padding-left: 0;
@@ -78,7 +154,7 @@ button.btn-transparent {
   box-sizing: border-box;
   border-radius: 100px;
   overflow: hidden;
-  background-color: #615c00;
+  background-color: #323232;
 }
 
 #counterbar {
@@ -200,7 +276,8 @@ input[type=checkbox]:checked+label .fa-check-circle {
 
 .help-cell {
   width: 24px;
-  text-align: center height: 19px;
+  text-align: center;
+  height: 19px;
   /* float: left; */
   /* background-color: #ff8a00; */
   margin: 3px;
@@ -223,13 +300,13 @@ input[type=checkbox]:checked+label .fa-check-circle {
 }
 .difficulty .radio-wrapper {
   display: inline-block;
-  width: 80px;
+  width: 72px;
 }
 .difficulty input {
   display: none;
 }
 .difficulty label {
-  color: #4a4602;
+  color: #222;
   text-transform: uppercase;
   font-size: 0.6em;
   padding: 10px;
@@ -241,11 +318,18 @@ input[type=checkbox]:checked+label .fa-check-circle {
 .difficulty input:checked+div+label {
   color: black;
 }
-.difficulty input:checked+div.meter-low+label {
+.difficulty input:checked+div.meter-infant+label {
   color: #27ff00;
 }
-.difficulty input:checked+div.meter-low:after {
+.difficulty input:checked+div.meter-infant:after {
   background-color: #27ff00;
+  height: 100%;
+}
+.difficulty input:checked+div.meter-low+label {
+  color: #00eeff;
+}
+.difficulty input:checked+div.meter-low:after {
+  background-color: #00eeff;
   height: 100%;
 }
 .difficulty input:checked+div.meter-medium+label {
@@ -267,7 +351,7 @@ input[type=checkbox]:checked+label .fa-check-circle {
   margin: 0 auto;
   position: relative;
   width: 50px;
-  background-color: #6b6607;
+  background-color: #414141;
   border-radius: 7px 7px 0 0;
 }
 .meter:after {
@@ -290,5 +374,19 @@ input[type=checkbox]:checked+label .fa-check-circle {
 }
 
 .meter-low {
+  height: 45px;
+}
+.meter-infant {
   height: 20px;
+}
+
+
+.confirm-button-wrapper {
+  display: inline-block;
+  height: 40px;
+}
+
+#answerField {
+  display: inline-block;
+  vertical-align: top;
 }

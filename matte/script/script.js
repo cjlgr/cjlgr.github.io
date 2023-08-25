@@ -12,10 +12,32 @@ var game = {
   time: 0,
   contest: false,
   timeout: null,
-
   mix: true,
   mode: 'multi',
   levels: {
+    infant: [
+      {
+        mode: 'plus',
+        char: '+',
+        min: 0,
+        max: 10,
+        time: 45,
+      },
+      {
+        mode: 'minus',
+        char: '-',
+        min: 0,
+        max: 10,
+        time: 45,
+      },
+      {
+        mode: 'multi',
+        char: '×',
+        min: 0,
+        max: 4,
+        time: 45
+      }
+    ],
     easy: [
       {
         mode: 'plus',
@@ -163,7 +185,7 @@ var game = {
     if (this.time === -1) {
       setTimeout(function(){
         $('#answerButton').attr('disabled', true);
-        this.onWrongAnswer('<h3>Tiden är slut!</h3><p>Det rätta svaret är '+this.currentAnswer+'</p> <button onclick="game.createNewQuestion()">Ny fråga</button>');
+        this.onWrongAnswer('<h3>Tiden är slut!</h3><p>Det rätta svaret är '+this.currentAnswer+'</p> <button class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button>');
       }.bind(this), 1000);
     }
   },
@@ -232,7 +254,7 @@ var game = {
     if (this.mode === 'multi') {
       answer = tal1*tal2;
 
-      if (!this.contest) {
+      if (!this.contest && (tal1 !== 0 && tal2 !== 0)) {
         helptxt = this.getHelpUnits(tal1, tal2);
         /*for (var i = 0; i < tal1; i++) {
           helptxt += this.getHelpUnit(tal2);
@@ -324,7 +346,7 @@ var game = {
       feedbacktxt += 'Du fick <strong>'+bonus+'</strong> i tidsbonus.';
       feedbacktxt += '<br><h4>Total poäng: <strong>'+totalscore+'</strong></h4><br>';
     }
-    feedbacktxt += '<br><button onclick="game.createNewQuestion()">Ny fråga</button></div>';
+    feedbacktxt += '<br><button class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button></div>';
 
     this.updateHelp('');
     this.updateFeedbackText(feedbacktxt);
