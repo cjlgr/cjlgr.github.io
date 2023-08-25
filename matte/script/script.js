@@ -20,7 +20,7 @@ var game = {
         mode: 'plus',
         char: '+',
         min: 0,
-        max: 10,
+        max: 10, 
         time: 45,
       },
       {
@@ -34,7 +34,7 @@ var game = {
         mode: 'multi',
         char: '×',
         min: 0,
-        max: 4,
+        max: 3,
         time: 45
       }
     ],
@@ -102,7 +102,7 @@ var game = {
       {
         mode: 'multi',
         char: '×',
-        min: 7,
+        min: 0,
         max: 10,
         time: 30
       }
