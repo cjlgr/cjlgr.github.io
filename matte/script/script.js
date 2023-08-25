@@ -401,6 +401,10 @@ $(document).ready(function() {
     game.mEl.show();
   })
 
-
+  $('.meter').on('click', function(){
+    var me = $(this);
+    var inp = me.siblings('input');
+    inp.prop("checked", true);
+  })
 
 });
