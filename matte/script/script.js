@@ -385,6 +385,9 @@ $(document).ready(function() {
     game.startGame(true);
   })
 
+
+
+
   var answerButton = $('#answerButton');
   answerButton.on('click', function(e){
     e.preventDefault();
@@ -399,6 +402,9 @@ $(document).ready(function() {
     }
   });
 
+
+
+
   var backButton = $('#back');
   backButton.on('click', function(e){
     e.preventDefault();
@@ -410,6 +416,23 @@ $(document).ready(function() {
     var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
     game.updateMenuScoreText(trainingscore, contestscore);
   })
+
+
+  // Lyssna på enter
+  var answerField = $('#answerField');
+  answerField.on('keyup', function(e){
+    e.preventDefault();
+    var answerButton = $('#answerButton');
+    // if button is enter then call same function as if answerbutton was clicked
+    if (e.keyCode === 13) {
+      // check so answerbutton isn't disabled
+      if (!answerButton.attr('disabled')) {
+        answerButton.click();
+      }
+    }
+  });
+
+
 
   $('.meter').on('click', function(){
     var me = $(this);
