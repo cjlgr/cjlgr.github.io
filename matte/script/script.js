@@ -4,6 +4,7 @@ var game = {
   mEl: $('#menu'),
   fEl: $('#feedback'),
   sEl: $('#score'),
+  msEl: $('#menu-score'),
   cEl: $('#counter'),
   hEl: $('#help'),
   currentAnswer: null,
@@ -314,6 +315,10 @@ var game = {
   updateScoreText: function(txt){
     this.sEl.html(txt);
   },
+  updateMenuScoreText: function(trainingscore, contestscore){
+    this.msEl.html('<span style="padding-right: 20px;"><strong class="training-label">Träning:</strong> <span class="training-score-label">'+trainingscore+'&nbsp;<i class="fa fa-trophy" style="color: orange;" aria-hidden="true"></i></span></span>'+
+    '<span style="white-space: nowrap"><strong class="contest-label">Tävling:</strong> <span class="contest-score-label">'+contestscore+'&nbsp;<i class="fa fa-trophy" style="color: orange;" aria-hidden="true"></i></span></span>');
+  },
   updateHelp: function(html) {
     this.hEl.html(html);
   },
@@ -399,6 +404,11 @@ $(document).ready(function() {
     e.preventDefault();
     game.el.hide();
     game.mEl.show();
+    
+    // Visa aktuell poäng
+    var trainingscore = localStorage.getItem('trainingscore') ? parseInt(localStorage.getItem('trainingscore')) : 0;
+    var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
+    game.updateMenuScoreText(trainingscore, contestscore);
   })
 
   $('.meter').on('click', function(){
@@ -406,5 +416,10 @@ $(document).ready(function() {
     var inp = me.siblings('input');
     inp.prop("checked", true);
   })
+
+  // Visa aktuell poäng
+  var trainingscore = localStorage.getItem('trainingscore') ? parseInt(localStorage.getItem('trainingscore')) : 0;
+  var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
+  game.updateMenuScoreText(trainingscore, contestscore);
 
 });

@@ -3,6 +3,7 @@ body {
   color: #111111;
   font-size: 1.2em;
   font-family: 'Concert One', cursive;
+  min-width: 330px;
 
 }
 
@@ -25,6 +26,32 @@ a {
   right: 0;
   top: 0;
   padding: 18px;
+}
+
+#menu-score-wrapper {
+  margin: 50px auto 0;
+  max-width: 300px;
+  background-color: #5c5b5b;
+  border-radius: 5px;
+  padding: 20px;
+}
+#menu-score-wrapper .score-wrapper {
+  position: static;
+  padding: 0;
+}
+
+.training-score-label {
+  color: #05aacc;
+}
+.contest-score-label {
+  color: #d781c0;
+}
+
+.training-label {
+  color: #a3fbfe;
+}
+.contest-label {
+  color: #fabfe9;
 }
 
 .text-center {
@@ -75,6 +102,19 @@ button.btn-3d:active {
   margin-bottom: 8px;
 }
 
+
+button.btn-3d-pink {
+  background-color: #fabfea;
+  border-bottom: 10px solid #d781c0;
+}
+button.btn-3d-pink:hover {
+  background-color: #f7d5ee;
+  border-bottom: 10px solid #db93c8;
+}
+button.btn-3d-pink:active {
+  background-color: #f8d4ee;
+  border-bottom: 2px solid #db93c8;
+}
 
 
 button.btn-big {

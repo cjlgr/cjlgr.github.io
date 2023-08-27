@@ -64,14 +64,18 @@
     <div class="big-button-wrapper">
       <button class="btn-big btn-3d" id="trainingButton">Träning</button>
       <br>
-      <button class="btn-big btn-3d" id="contestButton">Tävling</button>
+      <button class="btn-big btn-3d btn-3d-pink" id="contestButton">Tävling</button>
     </div>
-    <br><br>
+    <br>
     <div class="difficulty">
       <div class="radio-wrapper"><input name="difficulty" value="infant" id="radioInfant" type="radio" checked><div class="meter meter-infant"></div><label for="radioInfant">Lätt</label></div>
       <div class="radio-wrapper"><input name="difficulty" value="easy" id="radioEasy" type="radio"><div class="meter meter-low"></div><label for="radioEasy">Normal</label></div>
       <div class="radio-wrapper"><input name="difficulty" value="medium" id="radioMedium" type="radio"><div class="meter meter-medium"></div><label for="radioMedium">Svår</label></div>
       <div class="radio-wrapper"><input name="difficulty" value="hard" id="radioHard" type="radio"><div class="meter meter-high"></div><label for="radioHard">Expert</label></div>
+    </div>
+    <div id="menu-score-wrapper">
+      <div style="font-size: 1.2em; padding-bottom: 14px; text-align: center;">MINA POÄNG</div>
+      <span class="score-wrapper"><span id="menu-score">0</span></span>
     </div>
   </div>
   <div id="game">
@@ -90,7 +94,6 @@
     </div>
 
     <span class="score-wrapper">Poäng: <span id="score">0</span></span>
-
   </div>
 
   <script src="script/script.js"></script>
