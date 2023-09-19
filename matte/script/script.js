@@ -8,6 +8,8 @@ var game = {
   cEl: $('#counter'),
   hEl: $('#help'),
   currentAnswer: null,
+  currentCorrectReward: null,
+  xMode: false,
   score: 0,
   alarm: 0,
   time: 0,
@@ -111,7 +113,41 @@ var game = {
   },
   currentLevel: [],
 
+  saveSettings: function(){
+    localStorage.setItem('addition', $('#checkAdd').is(':checked'));
+    localStorage.setItem('subtraction', $('#checkSub').is(':checked'));
+    localStorage.setItem('multiplication', $('#checkMult').is(':checked'));
+    localStorage.setItem('xmode', $('#checkX').is(':checked'));
+    localStorage.setItem('difficulty', $('[name=difficulty]:checked').val());
+  },
+
+  // Load settings: load settings from localstorage. If no setting is stored, then addition should be set to true and the other ones to false. Difficulty should be set to infant.
+  loadSettings: function(){
+    var addition = localStorage.getItem('addition') === 'true' ? true : false;
+    var subtraction = localStorage.getItem('subtraction') === 'true' ? true : false;
+    var multiplication = localStorage.getItem('multiplication') === 'true' ? true : false;
+    var xmode = localStorage.getItem('xmode') === 'true' ? true : false;
+    var difficulty = localStorage.getItem('difficulty');
+
+    if (!(addition || subtraction || multiplication)) {
+      addition = true;
+    }
+    
+    if (!difficulty) {
+      difficulty = 'infant';
+    } 
+
+    $('#checkAdd').prop('checked', addition);
+    $('#checkSub').prop('checked', subtraction);
+    $('#checkMult').prop('checked', multiplication);
+    $('#checkX').prop('checked', xmode);
+    $('[name=difficulty][value='+difficulty+']').prop('checked', true);
+  },
+
+
   startGame: function(contest){
+
+    this.saveSettings();
 
     $('#game').css('height', window.innerHeight-16);
 
@@ -125,6 +161,9 @@ var game = {
     }
     if ($('#checkMult').is(':checked')) {
       this.modes.push('multi');
+    }
+    if ($('#checkX').is(':checked')) {
+      this.xMode = true;
     }
 
     var difficulty = $('[name=difficulty]:checked').val();
@@ -198,7 +237,13 @@ var game = {
   },
 
   createNewQuestion: function(){
-    var q = this.createQuestion();
+    var q;
+    if (this.xMode) {
+      q = this.createXQuestion();
+    } else {
+      q = this.createQuestion();
+    }
+    
     $('#answerButton').attr('disabled', false);
     this.updateFeedbackText('');
     $('#answerField').val('');
@@ -218,6 +263,85 @@ var game = {
       this.setAlarm(timestep);
     }
 
+  },
+
+  createXQuestion: function(){
+
+    var min, max, char, answer, m, 
+      helptxt = '',
+      orderOfX = this.getRandomInt(0, 1),
+      xCharacter = ['A', 'C', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'U', 'V', 'X', 'Y', 'Z'][this.getRandomInt(0, 19)];
+
+    m = this.getRandomInt(0, this.modes.length-1);
+    this.mode = this.modes[m];
+
+    for (var i = 0; i < this.currentLevel.length; i ++) {
+      if (this.currentLevel[i].mode === this.mode) {
+        min = this.currentLevel[i].min;
+        max = this.currentLevel[i].max;
+        char = this.currentLevel[i].char;
+      }
+    }
+
+    if (this.mode === 'plus') {
+      tal1 = this.getRandomInt(min, max);
+      tal2 = this.getRandomInt(min, max);
+    }
+    if (this.mode === 'multi') {
+      if (orderOfX===0) {
+        // Se till att det inte blir 0 x X = 0
+        tal1 = this.getRandomInt(Math.max(1, min), max);
+        tal2 = this.getRandomInt(min, max);
+      } else {
+        tal1 = this.getRandomInt(min, max);
+        tal2 = this.getRandomInt(Math.max(1, min), max);
+      }
+    }
+    if (this.mode === 'minus') {
+      tal1 = this.getRandomInt(min, max);
+      tal2 = this.getRandomInt(Math.min(min, tal1), Math.min(tal1, max));
+    }
+
+
+    if (this.mode === 'plus') {
+      answer = tal1+tal2;
+    }
+    if (this.mode === 'minus') {
+      answer = tal1-tal2;
+    }
+    if (this.mode === 'multi') {
+      answer = tal1*tal2;
+
+      if (!this.contest && (tal1 !== 0 && tal2 !== 0)) {
+        helptxt = this.getHelpUnits(tal1, tal2);
+        /*for (var i = 0; i < tal1; i++) {
+          helptxt += this.getHelpUnit(tal2);
+        }*/
+        this.updateHelp(helptxt);
+      } else {
+        this.updateHelp('');
+      }
+    } else {
+      this.updateHelp('');
+    }
+
+    
+    if (orderOfX === 0) {
+      this.currentAnswer = tal2;
+      this.currentCorrectReward = Math.ceil(answer*1.5);
+      q = {
+        question: tal1 + ' ' + char + ' '+xCharacter+' = ' + answer + '<br>Vad blir '+xCharacter+'?'
+      };
+    } else {
+      this.currentAnswer = tal1;
+      this.currentCorrectReward = Math.ceil(answer*1.5);
+      q = {
+        question: xCharacter + ' ' + char + ' ' + tal2 + ' = ' + answer + '<br>Vad blir '+xCharacter+'?'
+      };
+    }
+
+
+    return q;
   },
 
   createQuestion: function(){
@@ -270,6 +394,8 @@ var game = {
 
 
     this.currentAnswer = answer;
+    this.currentCorrectReward = answer;
+
 
     q = {
       question: 'Vad blir ' + tal1 + ' '+char+' ' + tal2 + '?'
@@ -325,7 +451,7 @@ var game = {
 
   onCorrectAnswer: function(){
 
-    var score = Math.max(this.currentAnswer, 1);
+    var score = Math.max(this.currentCorrectReward, 1);
     var bonus;
     if (this.contest) {
       bonus = Math.round(this.time / this.alarm * 10);
@@ -367,7 +493,7 @@ var game = {
 
 
 $(document).ready(function() {
-
+  game.loadSettings();
   var trainingButton = $('#trainingButton');
   trainingButton.on('click', function(e){
     e.preventDefault();

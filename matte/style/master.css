@@ -2,13 +2,13 @@ body {
   background-color: #757571;
   color: #111111;
   font-size: 1.2em;
-  font-family: 'Concert One', cursive;
+  font-family: 'Concert One', sans-serif;
   min-width: 330px;
 
 }
 
 h1, h2, h3, h4, h5, h6, legend, label {
-  font-family: 'Concert One', cursive;
+  font-family: 'Concert One', sans-serif;
 }
 
 h1 {
@@ -76,7 +76,7 @@ button {
   border-radius: 3px;
   outline: 0;
   transition: 0.01s;
-  font-family: 'Concert One', cursive;
+  font-family: 'Concert One', sans-serif;
 
 }
 button:hover {
@@ -251,17 +251,27 @@ input[type=checkbox]+label {
   line-height: 1.5em;
   opacity: 0.6;
 }
-input[type=checkbox]+label .fa-check-circle {
+input[type=checkbox]+label .fa-check-circle,
+input[type=checkbox]+label .fa-check-square {
   display: none;
 }
 input[type=checkbox]:checked+label {
   color: white;
   opacity: 1;
 }
-input[type=checkbox]:checked+label .fa-circle {
+input[type=checkbox]#checkX:checked+label {
+  color: yellow;
+  opacity: 1;
+  text-shadow: 5px 1px 18px yellow;
+}
+
+
+input[type=checkbox]:checked+label .fa-circle,
+input[type=checkbox]:checked+label .fa-square {
   display: none;
 }
-input[type=checkbox]:checked+label .fa-check-circle {
+input[type=checkbox]:checked+label .fa-check-circle,
+input[type=checkbox]:checked+label .fa-check-square {
   display: inline;
 }
 
