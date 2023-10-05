@@ -164,6 +164,8 @@ var game = {
     }
     if ($('#checkX').is(':checked')) {
       this.xMode = true;
+    } else {
+      this.xMode = false;
     }
 
     var difficulty = $('[name=difficulty]:checked').val();
