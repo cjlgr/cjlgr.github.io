@@ -54,6 +54,7 @@
   <!-- End Google Tag Manager (noscript) -->
 
   <div id="menu">
+    <button class="btn-transparent settings-button" id="settingsButton"><i class="fa fa-cog"></i></button>
     <h3 style="margin-bottom: 2px; margin-top: 5px;" class="text-center">Välkommen till</h3>
     <h1 style="margin-top: 2px; margin-bottom: 20px;" class="text-center">MATTESPELET!</h1>
     <div style="margin-bottom: 25px;">
@@ -78,6 +79,34 @@
       <div style="font-size: 1.2em; padding-bottom: 14px; text-align: center;">MINA POÄNG</div>
       <span class="score-wrapper"><span id="menu-score">0</span></span>
     </div>
+  </div>
+  <div id="settings">
+    <button class="btn-transparent" id="settingsclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
+
+    <h3 class="text-center">Multiplikation, Expert</h3>
+    <div class="field-group">
+      <label>Min A</label><br>
+      <input name="mina" type="number"><br>
+    </div>
+    <div class="field-group">
+      <label>Max A</label><br>
+      <input name="maxa" type="number"><br>
+    </div>
+    <div class="field-group">
+      <label>Min B</label><br>
+      <input name="minb" type="number"><br>
+    </div>
+    <div class="field-group">
+      <label>Max B</label><br>
+      <input name="maxb" type="number"><br>
+    </div>
+    <div class="field-group" style="margin-top: 40px;">
+      <button id="clearSettings" class="btn-confirm btn-small-3d">Reset</button>
+    </div>
+    <div class="field-group" style="margin-top: 20px;">
+      <button id="saveSettings" class="btn-confirm btn-small-3d">Spara</button>
+    </div>
+
   </div>
   <div id="game">
     <button class="btn-transparent" id="back"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>

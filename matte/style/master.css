@@ -27,6 +27,9 @@ a {
   top: 0;
   padding: 18px;
 }
+.text-center {
+  text-align: center;
+}
 
 #menu-score-wrapper {
   margin: 50px auto 0;
@@ -82,6 +85,15 @@ button {
 button:hover {
   background-color: #c5fcff;
   cursor: pointer;
+}
+
+button.settings-button {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  width: 60px;
+  margin-right: 0;
+  padding-right: 0;
 }
 
 button.btn-3d {
@@ -229,6 +241,10 @@ button.btn-transparent:hover {
 }
 
 #game {
+  display: none;
+}
+
+#settings {
   display: none;
 }
 
@@ -445,4 +461,29 @@ input[type=checkbox]:checked+label .fa-check-square {
 
 .big-button-wrapper {
   
+}
+
+.field-group {
+  margin: 0 auto 10px auto;
+  width: 200px;
+}
+.field-group input {
+  width: 100%;
+  height: 40px;
+  border-radius: 3px;
+  border: 0;
+  padding: 0 10px;
+  font-size: 1em;
+  box-sizing: border-box;
+  outline: 0;
+  font-family: 'Inconsolata', monospace;
+}
+.field-group button {
+  width: 100%;
+  border-radius: 3px;
+  border: 0;
+  padding: 0 10px;
+  font-size: 1em;
+  box-sizing: border-box;
+  outline: 0;
 }

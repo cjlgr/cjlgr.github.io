@@ -2,6 +2,7 @@ var game = {
   el: $('#game'),
   qEl: $('#questionText'),
   mEl: $('#menu'),
+  setEl: $('#settings'),
   fEl: $('#feedback'),
   sEl: $('#score'),
   msEl: $('#menu-score'),
@@ -107,6 +108,8 @@ var game = {
         char: '×',
         min: 0,
         max: 10,
+        minb: 0,
+        maxb: 10,
         time: 30
       }
     ]
@@ -120,6 +123,8 @@ var game = {
     localStorage.setItem('xmode', $('#checkX').is(':checked'));
     localStorage.setItem('difficulty', $('[name=difficulty]:checked').val());
   },
+
+
 
   // Load settings: load settings from localstorage. If no setting is stored, then addition should be set to true and the other ones to false. Difficulty should be set to infant.
   loadSettings: function(){
@@ -142,6 +147,38 @@ var game = {
     $('#checkMult').prop('checked', multiplication);
     $('#checkX').prop('checked', xmode);
     $('[name=difficulty][value='+difficulty+']').prop('checked', true);
+  },
+
+  saveCustomSettings: function(){
+    localStorage.setItem('mina', $('[name=mina]').val());
+    localStorage.setItem('minb', $('[name=minb]').val());
+    localStorage.setItem('maxa', $('[name=maxa]').val());
+    localStorage.setItem('maxb', $('[name=maxb]').val());
+    game.levels.hard[2].min = parseInt(localStorage.getItem('mina'));
+    game.levels.hard[2].max = parseInt(localStorage.getItem('maxa'));
+    game.levels.hard[2].minb = parseInt(localStorage.getItem('minb'));
+    game.levels.hard[2].maxb = parseInt(localStorage.getItem('maxb'));
+  },
+
+  loadCustomDifficultySettings: function(){
+    // Load min/max values
+    if (localStorage.getItem('mina')) {
+      $('[name=mina]').val(localStorage.getItem('mina'));
+      $('[name=maxa]').val(localStorage.getItem('maxa'));
+      $('[name=minb]').val(localStorage.getItem('minb'));
+      $('[name=maxb]').val(localStorage.getItem('maxb'));
+      game.levels.hard[2].min = parseInt(localStorage.getItem('mina'));
+      game.levels.hard[2].max = parseInt(localStorage.getItem('maxa'));
+      game.levels.hard[2].minb = parseInt(localStorage.getItem('minb'));
+      game.levels.hard[2].maxb = parseInt(localStorage.getItem('maxb'));
+    } else {
+      // Load defaults
+      $('[name=mina]').val(game.levels.hard[2].min);
+      $('[name=maxa]').val(game.levels.hard[2].max);
+      $('[name=minb]').val(game.levels.hard[2].minb);
+      $('[name=maxb]').val(game.levels.hard[2].maxb);
+    }
+
   },
 
 
@@ -314,7 +351,7 @@ var game = {
     if (this.mode === 'multi') {
       answer = tal1*tal2;
 
-      if (!this.contest && (tal1 !== 0 && tal2 !== 0)) {
+      if (!this.contest && (tal1 !== 0 && tal2 !== 0) && tal1 <= 10 && tal2 <= 10) {
         helptxt = this.getHelpUnits(tal1, tal2);
         /*for (var i = 0; i < tal1; i++) {
           helptxt += this.getHelpUnit(tal2);
@@ -348,7 +385,7 @@ var game = {
 
   createQuestion: function(){
 
-    var min, max, char, answer, m, helptxt = '';
+    var min, minb, max, maxb, char, answer, m, helptxt = '', customDifficulty = false;
 
     m = this.getRandomInt(0, this.modes.length-1);
     this.mode = this.modes[m];
@@ -356,12 +393,14 @@ var game = {
     for (var i = 0; i < this.currentLevel.length; i ++) {
       if (this.currentLevel[i].mode === this.mode) {
         min = this.currentLevel[i].min;
+        minb = this.currentLevel[i].minb;
         max = this.currentLevel[i].max;
+        maxb = this.currentLevel[i].maxb;
         char = this.currentLevel[i].char;
       }
     }
 
-    if (this.mode === 'plus' || this.mode === 'multi') {
+    if (this.mode === 'plus') {
       tal1 = this.getRandomInt(min, max);
       tal2 = this.getRandomInt(min, max);
     }
@@ -369,8 +408,21 @@ var game = {
       tal1 = this.getRandomInt(min, max);
       tal2 = this.getRandomInt(Math.min(min, tal1), Math.min(tal1, max));
     }
-
-
+    if (this.mode === 'multi') {
+      if (minb !== undefined) {
+        customDifficulty = true;
+        if (this.getRandomInt(0,1)===0) {
+          tal1 = this.getRandomInt(min, max);
+          tal2 = this.getRandomInt(minb, maxb);
+        } else {
+          tal1 = this.getRandomInt(minb, maxb);
+          tal2 = this.getRandomInt(min, max);
+        }
+      } else {
+        tal1 = this.getRandomInt(min, max);
+        tal2 = this.getRandomInt(min, max);
+      }
+    };
 
     if (this.mode === 'plus') {
       answer = tal1+tal2;
@@ -381,7 +433,7 @@ var game = {
     if (this.mode === 'multi') {
       answer = tal1*tal2;
 
-      if (!this.contest && (tal1 !== 0 && tal2 !== 0)) {
+      if (!this.contest && (tal1 !== 0 && tal2 !== 0) && (tal1 <= 10 && tal2 <= 10)) {
         helptxt = this.getHelpUnits(tal1, tal2);
         /*for (var i = 0; i < tal1; i++) {
           helptxt += this.getHelpUnit(tal2);
@@ -496,6 +548,50 @@ var game = {
 
 $(document).ready(function() {
   game.loadSettings();
+  game.loadCustomDifficultySettings();
+
+  var settingsButton = $('#settingsButton');
+  settingsButton.on('click', function(e){
+    e.preventDefault();
+    game.mEl.hide();
+    game.setEl.show();
+
+    game.loadCustomDifficultySettings();
+
+  })
+
+  var settingsBackButton = $('#settingsclose');
+  settingsBackButton.on('click', function(e){
+    e.preventDefault();
+    game.el.hide();
+    game.setEl.hide();
+    game.mEl.show();
+    
+    // Visa aktuell poäng
+    var trainingscore = localStorage.getItem('trainingscore') ? parseInt(localStorage.getItem('trainingscore')) : 0;
+    var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
+    game.updateMenuScoreText(trainingscore, contestscore);
+  });
+
+  var saveSettingsButton = $('#saveSettings');
+  saveSettingsButton.on('click', function(e){
+    e.preventDefault();
+    game.saveCustomSettings();
+    game.setEl.hide();
+    game.mEl.show();
+  })
+  
+  var clearSettingsButton = $('#clearSettings');
+  clearSettingsButton.on('click', function(e){
+    e.preventDefault();
+    $('[name=mina]').val(0);
+    $('[name=maxa]').val(10);
+    $('[name=minb]').val(0);
+    $('[name=maxb]').val(10);
+    
+  });
+
+
   var trainingButton = $('#trainingButton');
   trainingButton.on('click', function(e){
     e.preventDefault();
@@ -512,7 +608,6 @@ $(document).ready(function() {
     game.el.show();
     game.startGame(true);
   })
-
 
 
 
