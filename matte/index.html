@@ -83,25 +83,33 @@
   <div id="settings">
     <button class="btn-transparent" id="settingsclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
 
-    <h3 class="text-center">Multiplikation, Expert</h3>
-    <div class="field-group">
-      <label>Min A</label><br>
-      <input name="mina" type="number"><br>
+    <h3 class="text-center">Multiplikation</h3>
+    <p class="text-center" style="color: #3c3c3a">Justera <strong>storleken på faktorerna</strong> <br>för svårighetsnivå 
+      <span 
+        style="color: #ff5e5e; background-color: #595955; padding: 1px 10px 3px 10px; border-radius: 5px;"
+      >Expert</span> 
+    </p>
+
+    <div class="field-group field-group-inline">
+      <div class="form-row">
+        <label style="margin-bottom: 5px;">Intervall, faktor 1</label><br>
+      </div>
+      <div class="form-row">
+        <input name="mina" type="number"><span style="text-align: center; width: 50px; color: #3c3c3a; padding-top: 7px;">till</span><input name="maxa" type="number">
+      </div>
     </div>
-    <div class="field-group">
-      <label>Max A</label><br>
-      <input name="maxa" type="number"><br>
+
+    <div class="field-group field-group-inline">
+      <div class="form-row">
+        <label style="margin-bottom: 5px;">Intervall, faktor 2</label><br>
+      </div>
+      <div class="form-row">
+        <input name="minb" type="number"><span style="text-align: center; width: 50px; color: #3c3c3a; padding-top: 7px;">till</span><input name="maxb" type="number">
+      </div>
     </div>
-    <div class="field-group">
-      <label>Min B</label><br>
-      <input name="minb" type="number"><br>
-    </div>
-    <div class="field-group">
-      <label>Max B</label><br>
-      <input name="maxb" type="number"><br>
-    </div>
+
     <div class="field-group" style="margin-top: 40px;">
-      <button id="clearSettings" class="btn-confirm btn-small-3d">Reset</button>
+      <button id="clearSettings" class="btn-default btn-small-3d">Återställ</button>
     </div>
     <div class="field-group" style="margin-top: 20px;">
       <button id="saveSettings" class="btn-confirm btn-small-3d">Spara</button>

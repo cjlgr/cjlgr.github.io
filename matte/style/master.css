@@ -153,6 +153,20 @@ button:disabled.btn-confirm {
   opacity: 0.5;
 }
 
+button.btn-default {
+  background-color: #61615f;
+  color: white;
+  height: 36px;
+  line-height: 24px;
+  padding: 0px 20px;
+  font-size: 0.9em;
+}
+
+
+button:disabled.btn-default {
+  opacity: 0.5;
+}
+
 
 
 button.btn-small-3d {
@@ -186,6 +200,21 @@ button.btn-confirm.btn-small-3d:hover {
 button.btn-confirm.btn-small-3d:active {
   background-color: #49ce1d;
   border-bottom: 1px solid #3fb618;
+  height: 33px;
+}
+
+
+button.btn-default.btn-small-3d {
+  height: 38px;
+  border-bottom: 4px solid #454541;
+}
+button.btn-default.btn-small-3d:hover {
+  background-color: #6c6c6a;
+  border-bottom: 4px solid #52524d;
+}
+button.btn-default.btn-small-3d:active {
+  background-color: #6c6c6a;
+  border-bottom: 1px solid #52524d;
   height: 33px;
 }
 
@@ -465,8 +494,12 @@ input[type=checkbox]:checked+label .fa-check-square {
 
 .field-group {
   margin: 0 auto 10px auto;
-  width: 200px;
+  width: 300px;
 }
+.field-group-inline {
+
+}
+
 .field-group input {
   width: 100%;
   height: 40px;
@@ -478,6 +511,11 @@ input[type=checkbox]:checked+label .fa-check-square {
   outline: 0;
   font-family: 'Inconsolata', monospace;
 }
+.field-group-inline input {
+  width: auto;
+  width: 100px;
+  flex-grow: 4;
+}
 .field-group button {
   width: 100%;
   border-radius: 3px;
@@ -486,4 +524,8 @@ input[type=checkbox]:checked+label .fa-check-square {
   font-size: 1em;
   box-sizing: border-box;
   outline: 0;
+}
+
+.field-group-inline .form-row {
+  display: flex;
 }
