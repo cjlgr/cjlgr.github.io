@@ -617,13 +617,13 @@ input.correct-answer {
   color: #146806;
 }
 
-
 .toolbar-fixed {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  background-color: #757571;
+  backdrop-filter: blur(3px);
+  background-color: rgba(117,117,113,0.3);
   padding: 10px 10px 0 10px;
   height: 50px;
 }

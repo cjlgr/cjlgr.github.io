@@ -359,6 +359,69 @@ var game = {
   },
 
   onTestTimeUp: function(){
+    // Scroll to bottom
+    $('html, body').animate({
+      scrollTop: $(document).height()
+    }, 100);
+    // Correct the test
+    this.correctTest();
+  },
+
+  correctTest: function(){
+    var correctAnswers = 0;
+    var totalAnswers = 0;
+    var answers = $('input[type=number][data-type=test-input]');
+
+    // make the button correctTest disabled
+    $('#correctTest').attr('disabled', true);
+    
+    for (var i = 0; i < answers.length; i++) {
+      var answer = answers[i];
+
+      // make answer input read only
+      $(answer).attr('readonly', true);
+
+      var correctAnswer = parseInt($(answer).attr('data-answer'));
+      var userAnswer = parseInt($(answer).val());
+      if (correctAnswer === userAnswer) {
+        correctAnswers++;
+        // add 'correct-answer' class to input
+        $(answer).addClass('correct-answer');
+      } else {
+        // add 'wrong-answer' class to input
+        $(answer).addClass('wrong-answer');
+      }
+      totalAnswers++;
+    }
+    var score = correctAnswers / totalAnswers * 100;
+
+    // round score to 2 decimals
+    score = Math.round(score * 100) / 100;
+
+    var feedbacktxt = '<div class="box test-result-box"><h1>Bra jobbat!</h1>'+
+    '<p>Total poäng:</p>'+
+    '<div class="big-result"><span class="green-text">' + correctAnswers + '</span> / <span class="blue-text"><strong>'+totalAnswers+'</strong></span> </div>';
+    feedbacktxt += '<p><strong>(<span class="xgreen-text">'+score+' %</span>)</strong></p>';
+    // Alse stop the game time and add remaining time to feedback text
+    var remainingTime = game.stopGameTime();
+    var startTime = game.testmode[game.currentDifficulty].time;
+    var usedTime = startTime - remainingTime;
+    //feedbacktxt += '<p>Du hade <strong><span class="green-text">'+game.formatTime(remainingTime)+'</span></strong> kvar av tiden</p>';
+    feedbacktxt += '<p>Din tid: <strong><span class="green-text">'+game.formatTime(usedTime)+'</span></strong></p>';
+    // print average time per question
+    var averageTimePerQuestion = usedTime / correctAnswers;
+    if (!averageTimePerQuestion || averageTimePerQuestion === Infinity) {
+      averageTimePerQuestion = 0;
+    }
+
+    feedbacktxt += '<p>Snitt per rätt svar: <strong><span class="green-text">'+averageTimePerQuestion+'</span> s</strong></p>'; 
+    feedbacktxt += '<br><button style="margin-bottom: 100px;" id="newQuestion" class="btn-small-3d" onclick="game.startTest()">Nytt test</button>';
+    feedbacktxt += '</div>';
+
+    this.updateTestFeedbackText(feedbacktxt);
+
+    // Scroll to bottom
+    $('html, body').animate({scrollTop: $(document).height()}, 'slow');
   },
 
   getRandomInt: function (min, max) {
@@ -910,56 +973,7 @@ $(document).ready(function() {
   // listen to click event on document using jquery proxy function
   $(document).on('click', '#correctTest', $.proxy(function(e){
     e.preventDefault();
-    var correctAnswers = 0;
-    var totalAnswers = 0;
-    var answers = $('input[type=number][data-type=test-input]');
-
-    // make the button correctTest disabled
-    $('#correctTest').attr('disabled', true);
-    
-    for (var i = 0; i < answers.length; i++) {
-      var answer = answers[i];
-
-      // make answer input read only
-      $(answer).attr('readonly', true);
-
-      var correctAnswer = parseInt($(answer).attr('data-answer'));
-      var userAnswer = parseInt($(answer).val());
-      if (correctAnswer === userAnswer) {
-        correctAnswers++;
-        // add 'correct-answer' class to input
-        $(answer).addClass('correct-answer');
-      } else {
-        // add 'wrong-answer' class to input
-        $(answer).addClass('wrong-answer');
-      }
-      totalAnswers++;
-    }
-    var score = correctAnswers / totalAnswers * 100;
-
-    // round score to 2 decimals
-    score = Math.round(score * 100) / 100;
-
-    var feedbacktxt = '<div class="box test-result-box"><h1>Bra jobbat!</h1>'+
-    '<p>Total poäng:</p>'+
-    '<div class="big-result"><span class="green-text">' + correctAnswers + '</span> / <span class="blue-text"><strong>'+totalAnswers+'</strong></span> </div>';
-    feedbacktxt += '<p><strong>(<span class="xgreen-text">'+score+' %</span>)</strong></p>';
-    // Alse stop the game time and add remaining time to feedback text
-    var remainingTime = game.stopGameTime();
-    var startTime = game.testmode[game.currentDifficulty].time;
-    var usedTime = startTime - remainingTime;
-    //feedbacktxt += '<p>Du hade <strong><span class="green-text">'+game.formatTime(remainingTime)+'</span></strong> kvar av tiden</p>';
-    feedbacktxt += '<p>Din tid: <strong><span class="green-text">'+game.formatTime(usedTime)+'</span></strong></p>';
-    // print average time per question
-    var averageTimePerQuestion = usedTime / correctAnswers;
-    feedbacktxt += '<p>Snitt per rätt svar: <strong><span class="green-text">'+averageTimePerQuestion+'</span> s</strong></p>'; 
-    feedbacktxt += '<br><button style="margin-bottom: 100px;" id="newQuestion" class="btn-small-3d" onclick="game.startTest()">Nytt test</button>';
-    feedbacktxt += '</div>';
-
-    this.updateTestFeedbackText(feedbacktxt);
-
-    // Scroll to bottom
-    $('html, body').animate({scrollTop: $(document).height()}, 'slow');
+    game.correctTest();
 
   }, game));
 
