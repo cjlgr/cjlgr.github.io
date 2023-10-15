@@ -68,6 +68,9 @@ input[type=number] {
   font-family: 'Inconsolata', monospace;
   height: 36px;
   border: 0 !important;
+  box-sizing: border-box;
+  text-align: center;
+
 }
 
 button {
@@ -78,7 +81,7 @@ button {
   border: 0;
   border-radius: 3px;
   outline: 0;
-  transition: 0.01s;
+  /*transition: 0.01s;*/
   font-family: 'Concert One', sans-serif;
 
 }
@@ -100,12 +103,12 @@ button.btn-3d {
   border-bottom: 10px solid #00aacc;
   box-shadow: 0px 12px 4px 0px rgba(0,0,0,0.2);
 }
-button.btn-3d:hover {
+button.btn-3d:hover:not([disabled]) {
   background-color: #c5fcff;
   border-bottom: 10px solid #11c2e6;
   cursor: pointer;
 }
-button.btn-3d:active {
+button.btn-3d:active:not([disabled]) {
   background-color: #c5fcff;
   border-bottom: 2px solid #17bfe0;
   position: relative;
@@ -120,13 +123,26 @@ button.btn-3d-pink {
   background-color: #fabfea;
   border-bottom: 10px solid #d781c0;
 }
-button.btn-3d-pink:hover {
+button.btn-3d-pink:hover:not([disabled]) {
   background-color: #f7d5ee;
   border-bottom: 10px solid #db93c8;
 }
-button.btn-3d-pink:active {
+button.btn-3d-pink:active:not([disabled]) {
   background-color: #f8d4ee;
   border-bottom: 2px solid #db93c8;
+}
+
+button.btn-3d-yellow {
+  background-color: #ffff75;
+  border-bottom: 10px solid #f5b43c;
+}
+button.btn-3d-yellow:hover:not([disabled]) {
+  background-color: #ffff99;
+  border-bottom: 10px solid #ffce74;
+}
+button.btn-3d-yellow:active:not([disabled]) {
+  background-color: #ffff99;
+  border-bottom: 2px solid #ffce74;
 }
 
 
@@ -149,7 +165,7 @@ button.btn-confirm {
 }
 
 
-button:disabled.btn-confirm {
+button:disabled {
   opacity: 0.5;
 }
 
@@ -230,6 +246,14 @@ button.btn-transparent:hover {
   
 }
 
+.btn-row {
+  display: flex;
+}
+.btn-row button {
+  width: 40%;
+  flex-grow: 4;
+}
+
 .counter-wrapper {
   margin-top: 20px;
   height: 20px;
@@ -255,11 +279,7 @@ button.btn-transparent:hover {
   );
 }
 
-#questionText {
-  font-size: 1.3em;
-  margin-bottom: 5px;
-  text-align: center;
-}
+
 
 #answerWrapper {
   text-align: center;
@@ -277,12 +297,61 @@ button.btn-transparent:hover {
   display: none;
 }
 
+#test {
+  display: none;
+}
+
+#testquestions {
+  width: 300px;
+  margin: 0 auto;
+}
+#testquestions input{
+  width: 100%;
+}
+
+#questionText, .test-question-text {
+  font-size: 1.3em;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
 .box {
   text-align: center;
 }
 
 .green-box {
   color: #27ff00;
+}
+
+.test-result-box {
+  font-size: 1.3em;
+}
+
+.big-result {
+  font-size: 3em;
+}
+.big-result span {
+  text-shadow: 0px 2px 7px rgba(0,0,0,0.5)
+
+}
+
+.test-result-box button{
+  font-size: 19px;
+}
+.test-result-box p {
+  margin: 10px;
+}
+
+.green-text {
+  color: #28ff00;
+}
+
+.blue-text {
+  color: #a3fbfe;
+}
+
+.pink-text {
+  color: #fabfe9;
 }
 
 .red-box {
@@ -430,10 +499,10 @@ input[type=checkbox]:checked+label .fa-check-square {
   height: 100%;
 }
 .difficulty input:checked+div.meter-medium+label {
-  color: yellow;
+  color: #ffa500;
 }
 .difficulty input:checked+div.meter-medium:after {
-  background-color: yellow;
+  background-color: #ffa500;
   height: 100%;
 }
 .difficulty input:checked+div.meter-high+label {
@@ -489,7 +558,8 @@ input[type=checkbox]:checked+label .fa-check-square {
 }
 
 .big-button-wrapper {
-  
+  max-width: 300px;
+  margin: 0 auto;
 }
 
 .field-group {
@@ -528,4 +598,83 @@ input[type=checkbox]:checked+label .fa-check-square {
 
 .field-group-inline .form-row {
   display: flex;
+}
+
+.field-group-inline .form-col input{
+  width: 100%;
+}
+.field-group-inline .form-col label{
+  display: block;
+}
+
+input.wrong-answer {
+  background-color: #f7aeae;
+  color: #882727;
+}
+
+input.correct-answer {
+  background-color: #b5ffa8;
+  color: #146806;
+}
+
+
+.toolbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #757571;
+  padding: 10px 10px 0 10px;
+  height: 50px;
+}
+.toolbar-fixed+div {
+  margin-top: 70px;
+}
+
+.countdown {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.7);
+  backdrop-filter: blur(10px);
+}
+
+.countdown-text {
+  position: absolute;
+  padding: 10px;
+  font-size: 2.2em;
+  font-weight: bold;
+  color: #28ff00;
+  border-radius: 8px;
+  margin-top: 10px;
+  left: 50%;
+  margin-left: -50px;
+  width: 100px;
+  text-align: center;
+  top: 100px;
+  height: 100px;
+  line-height: 100px;
+  background-color: #4e4e4e;
+  border-bottom: 4px solid #242624;
+  box-shadow: 0 0 19px 0px rgba(0,0,0,0.5);
+}
+
+#gametime {
+  position: fixed;
+  top: 5px;
+  right: 5px;
+}
+.gametime-text {
+  width: 120px;
+  height: 50px;
+  line-height: 45px;
+  text-align: center;
+  font-size: 2em;
+  font-weight: bold;
+  color: #05aacc;
+  background-color: #3c3c39;
+  border-bottom: 1px solid #757571;
+  border-radius: 10px;
 }

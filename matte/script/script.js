@@ -4,10 +4,12 @@ var game = {
   mEl: $('#menu'),
   setEl: $('#settings'),
   fEl: $('#feedback'),
+  tfEl: $('#testfeedback'),
   sEl: $('#score'),
   msEl: $('#menu-score'),
   cEl: $('#counter'),
   hEl: $('#help'),
+  tEl: $('#test'),
   currentAnswer: null,
   currentCorrectReward: null,
   xMode: false,
@@ -18,6 +20,24 @@ var game = {
   timeout: null,
   mix: true,
   mode: 'multi',
+  testmode: {
+    infant: {
+      time: 100,
+      numberOfQuestions: 5
+    },
+    easy: {
+      time: 100,
+      numberOfQuestions: 10
+    },
+    medium: {
+      time: 200,
+      numberOfQuestions: 30
+    },
+    hard: {
+      time: 300,
+      numberOfQuestions: 50
+    },
+  },
   levels: {
     infant: [
       {
@@ -158,6 +178,11 @@ var game = {
     game.levels.hard[2].max = parseInt(localStorage.getItem('maxa'));
     game.levels.hard[2].minb = parseInt(localStorage.getItem('minb'));
     game.levels.hard[2].maxb = parseInt(localStorage.getItem('maxb'));
+
+    localStorage.setItem('testNbrOfQuestions', $('[name=test-nbr-of-questions]').val());
+    localStorage.setItem('testTime', $('[name=test-time]').val());
+    game.testmode.hard.numberOfQuestions = parseInt(localStorage.getItem('testNbrOfQuestions'));
+    game.testmode.hard.time = parseInt(localStorage.getItem('testTime'));
   },
 
   loadCustomDifficultySettings: function(){
@@ -179,10 +204,24 @@ var game = {
       $('[name=maxb]').val(game.levels.hard[2].maxb);
     }
 
+    if (localStorage.getItem('testNbrOfQuestions')) { // test-nbr-of-questions
+      $('[name=test-nbr-of-questions]').val(localStorage.getItem('testNbrOfQuestions'));
+      game.testmode.hard.numberOfQuestions = parseInt(localStorage.getItem('testNbrOfQuestions'));
+    } else {
+      $('[name=test-nbr-of-questions]').val(game.testmode.hard.numberOfQuestions);
+    }
+
+    if (localStorage.getItem('testTime')) { // test-time
+      $('[name=test-time]').val(localStorage.getItem('testTime'));
+      game.testmode.hard.time = parseInt(localStorage.getItem('testTime'));
+    } else {
+      $('[name=test-time]').val(game.testmode.hard.time);
+    }
+
   },
 
 
-  startGame: function(contest){
+  startGame: function(_mode){
 
     this.saveSettings();
 
@@ -223,7 +262,7 @@ var game = {
       clearTimeout(this.timeout);
     }
     this.alarmStopped = true;
-    this.contest = contest;
+    this.contest = _mode === 'contest';
     if (this.contest) {
       this.cEl.show();
       this.time = -1;
@@ -238,6 +277,88 @@ var game = {
 
     this.updateScoreText(this.score);
     this.createNewQuestion();
+  },
+
+  startTest: function(_mode){
+    this.updateTestFeedbackText('');
+
+    this.saveSettings();
+
+    $('#test').css('height', window.innerHeight-16);
+
+    // Scroll to top
+    $('html, body').animate({
+      scrollTop: 0
+    }, 100);
+
+    // Set modes
+    this.modes = [];
+    if ($('#checkAdd').is(':checked')) {
+      this.modes.push('plus');
+    }
+    if ($('#checkSub').is(':checked')) {
+      this.modes.push('minus');
+    }
+    if ($('#checkMult').is(':checked')) {
+      this.modes.push('multi');
+    }
+    if ($('#checkX').is(':checked')) {
+      this.xMode = true;
+    } else {
+      this.xMode = false;
+    }
+
+    var difficulty = $('[name=difficulty]:checked').val();
+    game.currentDifficulty = difficulty;
+    this.currentLevel = this.levels[difficulty];
+    var gametime = game.testmode[difficulty].time;
+    var numberOfQuestions = game.testmode[difficulty].numberOfQuestions;
+
+    // If no mode is selected, use all
+    if (this.modes.length === 0) {
+      this.modes = [
+        'plus',
+        'minus',
+        'multi'
+      ];
+    }
+
+    // Stop last game
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+    this.alarmStopped = true;
+
+    this.updateScoreText(999);
+    var questions = [];
+
+
+
+
+
+    for (var i = 0; i < numberOfQuestions; i++) {
+      questions.push(this.createTestQuestion());
+    }
+
+    // add the question texts (questions[i].q.question) to the #testquestions element with a <br> between each question
+    var qtxt = '';
+    for (var i = 0; i < questions.length; i++) {
+      qtxt += '<div class="test-question-text">' + questions[i].q.question + '</div>';
+      qtxt += '<input name="q'+i+'" type="number" data-type="test-input" data-answer="'+questions[i].a.answer+'"><br><br>';
+    }
+
+    qtxt += '<div style="height: 100px; margin-top: 50px; margin-bottom: 50px;"><button id="correctTest" class="btn-big btn-3d btn-3d-yellow">Kontrollera svar</button></div>';
+
+    $('#testquestions').html(qtxt);
+
+    game.countDown(3, function(){
+      game.initGameTime(gametime, function(){
+        game.onTestTimeUp();
+      });
+    });
+  },
+
+  onTestTimeUp: function(){
   },
 
   getRandomInt: function (min, max) {
@@ -283,8 +404,11 @@ var game = {
       q = this.createQuestion();
     }
     
-    $('#answerButton').attr('disabled', false);
     this.updateFeedbackText('');
+    setTimeout(function(){
+      $('#answerButton').attr('disabled', false);
+    }, 100);
+
     $('#answerField').val('');
     $('#answerField').focus();
     this.updateQuestionText(q.question);
@@ -458,6 +582,78 @@ var game = {
     return q;
   },
 
+
+  createTestQuestion: function(){
+
+    var min, minb, max, maxb, char, answer, m, helptxt = '', customDifficulty = false;
+
+    m = this.getRandomInt(0, this.modes.length-1);
+    this.mode = this.modes[m];
+
+    for (var i = 0; i < this.currentLevel.length; i ++) {
+      if (this.currentLevel[i].mode === this.mode) {
+        min = this.currentLevel[i].min;
+        minb = this.currentLevel[i].minb;
+        max = this.currentLevel[i].max;
+        maxb = this.currentLevel[i].maxb;
+        char = this.currentLevel[i].char;
+      }
+    }
+
+    if (this.mode === 'plus') {
+      tal1 = this.getRandomInt(min, max);
+      tal2 = this.getRandomInt(min, max);
+    }
+    if (this.mode === 'minus') {
+      tal1 = this.getRandomInt(min, max);
+      tal2 = this.getRandomInt(Math.min(min, tal1), Math.min(tal1, max));
+    }
+    if (this.mode === 'multi') {
+      if (minb !== undefined) {
+        customDifficulty = true;
+        if (this.getRandomInt(0,1)===0) {
+          tal1 = this.getRandomInt(min, max);
+          tal2 = this.getRandomInt(minb, maxb);
+        } else {
+          tal1 = this.getRandomInt(minb, maxb);
+          tal2 = this.getRandomInt(min, max);
+        }
+      } else {
+        tal1 = this.getRandomInt(min, max);
+        tal2 = this.getRandomInt(min, max);
+      }
+    };
+
+    if (this.mode === 'plus') {
+      answer = tal1+tal2;
+    }
+    if (this.mode === 'minus') {
+      answer = tal1-tal2;
+    }
+    if (this.mode === 'multi') {
+      answer = tal1*tal2; 
+    }
+
+    this.updateHelp('');
+
+    this.currentAnswer = answer;
+    this.currentCorrectReward = answer;
+
+    ret = {
+      q: {
+        tal1: tal1,
+        char: char,
+        tal2: tal2,
+        question: '' + tal1 + ' '+char+' ' + tal2 + ' ='
+      },
+      a: {
+        answer: answer
+      }
+    }
+
+    return ret;
+  },
+
   getHelpUnits: function(qty, innerQty){
 
     var type = ['car', 'eye', 'user-secret'][this.getRandomInt(0,2)],
@@ -491,6 +687,9 @@ var game = {
   },
   updateFeedbackText: function(txt){
     this.fEl.html(txt);
+  },
+  updateTestFeedbackText: function(txt){
+    this.tfEl.html(txt);
   },
   updateScoreText: function(txt){
     this.sEl.html(txt);
@@ -531,18 +730,90 @@ var game = {
       feedbacktxt += 'Du fick <strong>'+bonus+'</strong> i tidsbonus.';
       feedbacktxt += '<br><h4>Total poäng: <strong>'+totalscore+'</strong></h4><br>';
     }
-    feedbacktxt += '<br><button class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button></div>';
+    feedbacktxt += '<br><button id="newQuestion" class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button></div>';
 
     this.updateHelp('');
     this.updateFeedbackText(feedbacktxt);
 
+    $('#newQuestion').focus();
 
   },
 
   onWrongAnswer: function(txt){
-    wrongtxt = txt ? txt : '<h3>Fel!</h3>';
+    wrongtxt = txt ? txt : '<h3>Fel svar. Försök igen!</h3>';
     this.updateFeedbackText('<div class="box red-box">' + wrongtxt + '</div>');
+  },
+
+  countDown: function(seconds, callbackFn){
+    // add a div to the body with id="countdown"
+    $('body').append('<div id="countdown" class="countdown"><div class="countdown-text"></div></div>');
+    var countdown = $('#countdown');
+    var countdownText = $('#countdown .countdown-text');
+    countdownText.html(seconds || 5);
+    countdown.show();
+
+    var interval = setInterval(function(){
+      seconds--;
+      countdownText.html(seconds);
+      if (seconds === 0) {
+        clearInterval(interval);
+        countdown.hide();
+        //remove countdown div from the body
+        countdown.remove();
+        if (callbackFn && typeof callbackFn === 'function') {
+          callbackFn();
+        }
+      }
+    }, 1000);
+  },
+
+  // a function that keeps track of math test game time. It takes a number of seconds as argument and a callback function that will be called when the time is up.
+  // It displays the current time (in minutes:seconds) in a div with id="gametime"
+  initGameTime: function(seconds, callbackFn){
+    // add a div to the body with id="gametime"
+    $('body').append('<div id="gametime" class="gametime"><div class="gametime-text"></div></div>');
+    var gametime = $('#gametime');
+    var gametimeText = $('#gametime .gametime-text');
+    gametimeText.html(this.formatTime(seconds));
+    gametime.show();
+    game.gametime = seconds;
+
+    game.gameTimeInterval = setInterval(function(){
+      seconds--;
+      // Store current gametime in a variable
+      game.gametime = seconds;
+      gametimeText.html(this.formatTime(seconds));
+      if (seconds === 0) {
+        clearInterval(game.gameTimeInterval);
+        gametime.hide();
+        //remove gametime div from the body
+        gametime.remove();
+        if (callbackFn && typeof callbackFn === 'function') {
+          callbackFn();
+        }
+      }
+    }.bind(this), 1000);
+  },
+
+  stopGameTime: function(){
+    $('#gametime').hide();
+    $('#gametime').remove();
+    clearInterval(game.gameTimeInterval);
+    // return how much time is left in seconds
+    return game.gametime;
+  },
+
+  formatTime: function(seconds){
+    var minutes = Math.floor(seconds / 60);
+    var seconds = seconds % 60;
+    if (seconds < 10) {
+      seconds = '0'+seconds;
+    }
+    return minutes + ':' + seconds;
   }
+
+
+
 }
 
 
@@ -588,7 +859,8 @@ $(document).ready(function() {
     $('[name=maxa]').val(10);
     $('[name=minb]').val(0);
     $('[name=maxb]').val(10);
-    
+    $('[name=test-nbr-of-questions]').val(50);
+    $('[name=test-time]').val(300);
   });
 
 
@@ -597,7 +869,7 @@ $(document).ready(function() {
     e.preventDefault();
     game.mEl.hide();
     game.el.show();
-    game.startGame(false);
+    game.startGame('training');
   })
 
 
@@ -606,27 +878,106 @@ $(document).ready(function() {
     e.preventDefault();
     game.mEl.hide();
     game.el.show();
-    game.startGame(true);
+    game.startGame('contest');
   })
 
+  var testButton = $('#testButton');
+  testButton.on('click', function(e){
+    e.preventDefault();
+    game.mEl.hide();
+    game.tEl.show();
+    game.startTest();
+  })
 
 
   var answerButton = $('#answerButton');
   answerButton.on('click', function(e){
     e.preventDefault();
     var answer = $('#answerField').val();
-    answer = parseInt(answer, 10);
+    
+    if (answer !== '') {
+      answer = parseInt(answer, 10);
 
-    if (answer === game.currentAnswer) {
-      game.onCorrectAnswer();
+      if (answer === game.currentAnswer) {
+        game.onCorrectAnswer();
 
-    } else {
-      game.onWrongAnswer();
+      } else {
+        game.onWrongAnswer();
+      }
     }
   });
 
+  // listen to click event on document using jquery proxy function
+  $(document).on('click', '#correctTest', $.proxy(function(e){
+    e.preventDefault();
+    var correctAnswers = 0;
+    var totalAnswers = 0;
+    var answers = $('input[type=number][data-type=test-input]');
+
+    // make the button correctTest disabled
+    $('#correctTest').attr('disabled', true);
+    
+    for (var i = 0; i < answers.length; i++) {
+      var answer = answers[i];
+
+      // make answer input read only
+      $(answer).attr('readonly', true);
+
+      var correctAnswer = parseInt($(answer).attr('data-answer'));
+      var userAnswer = parseInt($(answer).val());
+      if (correctAnswer === userAnswer) {
+        correctAnswers++;
+        // add 'correct-answer' class to input
+        $(answer).addClass('correct-answer');
+      } else {
+        // add 'wrong-answer' class to input
+        $(answer).addClass('wrong-answer');
+      }
+      totalAnswers++;
+    }
+    var score = correctAnswers / totalAnswers * 100;
+
+    // round score to 2 decimals
+    score = Math.round(score * 100) / 100;
+
+    var feedbacktxt = '<div class="box test-result-box"><h1>Bra jobbat!</h1>'+
+    '<p>Total poäng:</p>'+
+    '<div class="big-result"><span class="green-text">' + correctAnswers + '</span> / <span class="blue-text"><strong>'+totalAnswers+'</strong></span> </div>';
+    feedbacktxt += '<p><strong>(<span class="xgreen-text">'+score+' %</span>)</strong></p>';
+    // Alse stop the game time and add remaining time to feedback text
+    var remainingTime = game.stopGameTime();
+    var startTime = game.testmode[game.currentDifficulty].time;
+    var usedTime = startTime - remainingTime;
+    //feedbacktxt += '<p>Du hade <strong><span class="green-text">'+game.formatTime(remainingTime)+'</span></strong> kvar av tiden</p>';
+    feedbacktxt += '<p>Din tid: <strong><span class="green-text">'+game.formatTime(usedTime)+'</span></strong></p>';
+    // print average time per question
+    var averageTimePerQuestion = usedTime / correctAnswers;
+    feedbacktxt += '<p>Snitt per rätt svar: <strong><span class="green-text">'+averageTimePerQuestion+'</span> s</strong></p>'; 
+    feedbacktxt += '<br><button style="margin-bottom: 100px;" id="newQuestion" class="btn-small-3d" onclick="game.startTest()">Nytt test</button>';
+    feedbacktxt += '</div>';
+
+    this.updateTestFeedbackText(feedbacktxt);
+
+    // Scroll to bottom
+    $('html, body').animate({scrollTop: $(document).height()}, 'slow');
+
+  }, game));
 
 
+
+  var testBackButton = $('#testback');
+  testBackButton.on('click', function(e){
+    e.preventDefault();
+    game.tEl.hide();
+    game.mEl.show();
+
+    game.stopGameTime();
+    
+    // Visa aktuell poäng
+    var trainingscore = localStorage.getItem('trainingscore') ? parseInt(localStorage.getItem('trainingscore')) : 0;
+    var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
+    game.updateMenuScoreText(trainingscore, contestscore);
+  });
 
   var backButton = $('#back');
   backButton.on('click', function(e){
@@ -638,7 +989,7 @@ $(document).ready(function() {
     var trainingscore = localStorage.getItem('trainingscore') ? parseInt(localStorage.getItem('trainingscore')) : 0;
     var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
     game.updateMenuScoreText(trainingscore, contestscore);
-  })
+  });
 
 
   // Lyssna på enter
@@ -654,6 +1005,36 @@ $(document).ready(function() {
       }
     }
   });
+
+  // listen to number input by keyup, all fields with data-type=test-input, by listening on document using jquerys proxy function
+  $(document).on('keyup', 'input[type=number][data-type=test-input]', $.proxy(function(e){
+    e.preventDefault();
+    if (e.keyCode === 13) {
+      var answer = $(e.currentTarget).val();
+      // if answer is not empty
+      if (answer !== '') {
+        answer = parseInt(answer, 10);
+        // if answer is not a number
+        if (isNaN(answer)) {
+          $(e.currentTarget).val('');
+        } else {
+          // set focus in the next input field
+          var elName = $(e.currentTarget).attr('name');
+          var elNumber = parseInt(elName.substring(1, elName.length));
+          var nextElNumber = elNumber + 1;
+          var nextEl = $('input[name=q'+nextElNumber+']');
+          if (nextEl.length > 0) {
+            nextEl.focus();
+          } else {
+            // if no more input fields then click correctTest button
+            $('#correctTest').click();
+          }
+
+          
+        }
+      }
+    }
+  }, game));
 
 
 

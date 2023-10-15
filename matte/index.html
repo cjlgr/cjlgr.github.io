@@ -4,7 +4,7 @@
   <title>Mattespelet</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
 
 <!-- Google Tag Manager -->
   <script>
@@ -66,7 +66,10 @@
     <div class="big-button-wrapper">
       <button class="btn-big btn-3d" id="trainingButton">Träning</button>
       <br>
-      <button class="btn-big btn-3d btn-3d-pink" id="contestButton">Tävling</button>
+      <div class="btn-row">
+        <button class="btn-big btn-3d btn-3d-pink" style="margin-right: 20px;" id="contestButton">Tävling</button>
+        <button class="btn-big btn-3d btn-3d-yellow" id="testButton">Test</button>
+      </div>
     </div>
     <br>
     <div class="difficulty">
@@ -80,6 +83,11 @@
       <span class="score-wrapper"><span id="menu-score">0</span></span>
     </div>
   </div>
+
+
+
+
+
   <div id="settings">
     <button class="btn-transparent" id="settingsclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
 
@@ -108,6 +116,30 @@
       </div>
     </div>
 
+    <h3 class="text-center" style="margin-top: 80px;">Test</h3>
+    <p class="text-center" style="color: #3c3c3a">
+      Justera <strong>tid</strong> och <strong>antal frågor</strong> vid <br>test för svårighetsnivå
+      <span 
+        style="color: #ff5e5e; background-color: #595955; padding: 1px 10px 3px 10px; border-radius: 5px;"
+      >Expert</span> 
+    </p>
+
+
+    <div class="field-group field-group-inline">
+
+      <div class="form-row">
+        <div class="form-col" style="margin-right: 20px;">
+          <label style="margin-bottom: 5px;">Antal frågor</label>
+          <input name="test-nbr-of-questions" type="number">&nbsp;
+        </div>
+        <div class="form-col">
+          <label style="margin-bottom: 5px;">Tid (sekunder)</label>
+          <input name="test-time" type="number">
+        </div>
+      </div>
+    </div>
+
+    
     <div class="field-group" style="margin-top: 40px;">
       <button id="clearSettings" class="btn-default btn-small-3d">Återställ</button>
     </div>
@@ -116,6 +148,11 @@
     </div>
 
   </div>
+
+
+
+
+
   <div id="game">
     <button class="btn-transparent" id="back"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
     <div id="questionText"></div>
@@ -132,6 +169,15 @@
     </div>
 
     <span class="score-wrapper">Poäng: <span id="score">0</span></span>
+  </div>
+  <div id="test">
+    <div class="toolbar toolbar-fixed">
+      <button class="btn-transparent" id="testback"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
+    </div>
+    <div>
+      <div id="testquestions"></div>
+      <div id="testfeedback"></div>
+    </div>
   </div>
 
   <script src="script/script.js?v=1"></script>
