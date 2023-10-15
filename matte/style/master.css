@@ -623,6 +623,7 @@ input.correct-answer {
   left: 0;
   width: 100%;
   backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   background-color: rgba(117,117,113,0.3);
   padding: 10px 10px 0 10px;
   height: 50px;
@@ -639,6 +640,8 @@ input.correct-answer {
   bottom: 0;
   background-color: rgba(0,0,0,0.7);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
 }
 
 .countdown-text {
