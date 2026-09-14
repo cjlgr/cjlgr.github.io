@@ -1050,19 +1050,29 @@ $(document).ready(function() {
     }
   }, game));
 
-  // Håll .toolbar-fixed synlig högst upp i den synliga vyn, även när tangentbordet
-  // är öppet i iOS Safari (då flyttas visual viewport utan att layout viewport scrollar)
+  // Håll fixed-positionerade element (toolbar, timer) synliga i den synliga vyn,
+  // även när tangentbordet är öppet i iOS Safari (då flyttas visual viewport
+  // utan att layout viewport scrollar). #gametime läggs till/tas bort dynamiskt
+  // så vi slår upp den vid varje uppdatering istället för att cacha referensen.
   var fixedToolbar = document.querySelector('.toolbar-fixed');
-  if (fixedToolbar && window.visualViewport) {
-    var updateFixedToolbarPosition = function(){
+  if (window.visualViewport) {
+    var updateFixedPositions = function(){
       var vv = window.visualViewport;
-      fixedToolbar.style.top = vv.offsetTop + 'px';
-      fixedToolbar.style.left = vv.offsetLeft + 'px';
-      fixedToolbar.style.width = vv.width + 'px';
+      if (fixedToolbar) {
+        fixedToolbar.style.top = vv.offsetTop + 'px';
+        fixedToolbar.style.left = vv.offsetLeft + 'px';
+        fixedToolbar.style.width = vv.width + 'px';
+      }
+      var gametime = document.getElementById('gametime');
+      if (gametime) {
+        gametime.style.top = (vv.offsetTop + 5) + 'px';
+        gametime.style.right = 'auto';
+        gametime.style.left = (vv.offsetLeft + vv.width - gametime.offsetWidth - 5) + 'px';
+      }
     };
-    window.visualViewport.addEventListener('resize', updateFixedToolbarPosition);
-    window.visualViewport.addEventListener('scroll', updateFixedToolbarPosition);
-    updateFixedToolbarPosition();
+    window.visualViewport.addEventListener('resize', updateFixedPositions);
+    window.visualViewport.addEventListener('scroll', updateFixedPositions);
+    updateFixedPositions();
   }
 
 
