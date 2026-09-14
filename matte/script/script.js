@@ -1243,16 +1243,16 @@ var game = {
       ['🍦', '🍨'], ['🦕', '🦖'], ['🍪', '🍩'], ['🐺', '🦁'], ['🦄', '🐉'],
       ['🌊', '🌋'], ['🦑', '🦋'], ['🌯', '🍜'], ['🪐', '🚀'], ['🐢', '🦎'],
       ['🐨', '🐸'], ['🍬', '🍫'], ['🐻', '🐼'], ['🐧', '🦉'], ['🦊', '🐵'],
-      ['🐝', '🐞'], ['💎', '👑'], ['🐊', '🦂'], ['🌈', '⚡']
+      ['🐝', '🐞'], ['🌈', '⚡'], ['🐊', '🦂'], ['💎', '👑']
     ],
     contest: [
       ['🔥', '💪'], ['🥳', '👏'], ['⚡', '✨'], ['🏈', '⚾'], ['🎇', '🌟'],
       ['🎿', '⛷️'], ['🏒', '🏑'], ['🤸', '🤾'], ['✈️', '🚀'], ['🏉', '🎱'],
       ['🤽', '🚴'], ['🎾', '🏐'], ['🏅', '🎖️'], ['🛹', '🏂'], ['🛸', '🥇'],
       ['🎳', '🏹'], ['🚩', '🎆'], ['🥍', '🏏'], ['🤼', '🤹'], ['🤺', '🥊'],
-      ['🏎️', '🏍️'], ['🏆', '🏁'], ['🥈', '🥉'], ['🚗', '🚁'], ['🥋', '🏋️'],
+      ['🏎️', '🏍️'], ['🏓', '🏸'], ['🥈', '🥉'], ['🚗', '🚁'], ['🥋', '🏋️'],
       ['🏄', '🏊'], ['⚔️', '🛡️'], ['🧗', '🪂'], ['💫', '🦸'], ['🦹', '🥷'],
-      ['⚽', '🏀'], ['🎯', '🛼'], ['🚵', '🏇'], ['🏓', '🏸']
+      ['⚽', '🏀'], ['🎯', '🛼'], ['🚵', '🏇'], ['🏁', '🏆']
     ]
   },
 
@@ -1313,18 +1313,22 @@ var game = {
   },
 
   // Bygger rutnätet av upplåsta (och kommande, låsta) emojis för en poängsumma
+  // Den allra sista tierns andra emoji är samlingens stora final och visas separat
+  // (se buildFinalEmojiHtml) - resten av rutnätet byggs här.
   buildEmojiCollectionHtml: function(tiers, score){
     var html = '';
     var mascot = game.getMascot();
+    var lastIndex = tiers.length - 1;
     for (var i = 0; i < game.standardEmojis.length; i++) {
       html += game.buildMascotCell(game.standardEmojis[i], mascot);
     }
     for (var i = 0; i < tiers.length; i++) {
       var threshold = game.emojiTierThresholds[i];
       var unlocked = score >= threshold;
-      for (var j = 0; j < tiers[i].length; j++) {
+      var emojisInTier = (i === lastIndex) ? [tiers[i][0]] : tiers[i];
+      for (var j = 0; j < emojisInTier.length; j++) {
         if (unlocked) {
-          html += game.buildMascotCell(tiers[i][j], mascot);
+          html += game.buildMascotCell(emojisInTier[j], mascot);
         } else {
           html += '<div class="emoji-collection-item locked"><i class="fa fa-lock"></i><span class="emoji-collection-threshold">' + threshold + '</span></div>';
         }
@@ -1333,9 +1337,21 @@ var game = {
     return html;
   },
 
-  buildMascotCell: function(emoji, mascot){
+  // Bygger den extra stora, centrerade finalrutan med samlingens sista, mest exklusiva emoji
+  buildFinalEmojiHtml: function(tiers, score){
+    var lastIndex = tiers.length - 1;
+    var threshold = game.emojiTierThresholds[lastIndex];
+    var finalEmoji = tiers[lastIndex][1];
+    if (score >= threshold) {
+      return game.buildMascotCell(finalEmoji, game.getMascot(), true);
+    }
+    return '<div class="emoji-collection-item locked final"><i class="fa fa-lock"></i><span class="emoji-collection-threshold">' + threshold + '</span></div>';
+  },
+
+  buildMascotCell: function(emoji, mascot, big){
     var selectedClass = (emoji === mascot) ? ' selected' : '';
-    return '<div class="emoji-collection-item unlocked' + selectedClass + '" data-emoji="' + emoji + '">' + emoji + '</div>';
+    var bigClass = big ? ' final' : '';
+    return '<div class="emoji-collection-item unlocked' + selectedClass + bigClass + '" data-emoji="' + emoji + '">' + emoji + '</div>';
   },
 
   // Maskoten är en av elevens upplåsta emojis, sparad lokalt, som visas svävande i hörnet
@@ -1371,6 +1387,8 @@ var game = {
 
     $('#collectionTrainingGrid').html(game.buildEmojiCollectionHtml(game.emojiTierEmojisByMode.training, trainingscore));
     $('#collectionContestGrid').html(game.buildEmojiCollectionHtml(game.emojiTierEmojisByMode.contest, contestscore));
+    $('#collectionTrainingFinal').html(game.buildFinalEmojiHtml(game.emojiTierEmojisByMode.training, trainingscore));
+    $('#collectionContestFinal').html(game.buildFinalEmojiHtml(game.emojiTierEmojisByMode.contest, contestscore));
   },
 
   emojiBurst: function(pool, count){

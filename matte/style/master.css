@@ -384,6 +384,20 @@ button.btn-transparent:hover {
   margin-top: 2px;
 }
 
+.emoji-collection-final-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+.emoji-collection-item.final {
+  width: 64px;
+  height: 64px;
+  font-size: 2em;
+}
+.emoji-collection-item.final.locked .emoji-collection-threshold {
+  font-size: 0.5em;
+}
+
 #testquestions {
   width: 300px;
   margin: 0 auto;
