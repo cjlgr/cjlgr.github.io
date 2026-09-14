@@ -674,7 +674,7 @@ var game = {
     var qtxt = '';
     for (var i = 0; i < questions.length; i++) {
       qtxt += '<div class="test-question-text">' + questions[i].q.question + '</div>';
-      qtxt += '<input name="q'+i+'" type="number" data-type="test-input" data-answer="'+questions[i].a.answer+'"><br><br>';
+      qtxt += '<input name="q'+i+'" type="number" data-type="test-input" data-answer="'+questions[i].a.answer+'" data-reward="'+questions[i].a.reward+'"><br><br>';
     }
 
     qtxt += '<div style="height: 100px; margin-top: 50px; margin-bottom: 50px;"><button id="correctTest" class="btn-big btn-3d btn-3d-yellow">Kontrollera svar</button></div>';
@@ -700,11 +700,12 @@ var game = {
   correctTest: function(){
     var correctAnswers = 0;
     var totalAnswers = 0;
+    var pointsEarned = 0;
     var answers = $('input[type=number][data-type=test-input]');
 
     // make the button correctTest disabled
     $('#correctTest').attr('disabled', true);
-    
+
     for (var i = 0; i < answers.length; i++) {
       var answer = answers[i];
 
@@ -715,6 +716,8 @@ var game = {
       var userAnswer = parseInt($(answer).val());
       if (correctAnswer === userAnswer) {
         correctAnswers++;
+        // Vanligtvis 10 poäng, men mindre om frågan hade ett för smalt (lätt memorerat) intervall
+        pointsEarned += parseInt($(answer).attr('data-reward'), 10) || 10;
         // add 'correct-answer' class to input
         $(answer).addClass('correct-answer');
       } else {
@@ -728,8 +731,7 @@ var game = {
     // round score to 2 decimals
     score = Math.round(score * 100) / 100;
 
-    // Test ger poäng till Tävling-samlingen - 10 poäng per rätt svar
-    var pointsEarned = correctAnswers * 10;
+    // Test ger poäng till Tävling-samlingen
     var previousContestScore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
     var newContestScore = previousContestScore + pointsEarned;
     localStorage.setItem('contestscore', newContestScore);
@@ -1080,6 +1082,10 @@ var game = {
     this.currentAnswer = answer;
     this.currentCorrectReward = answer;
 
+    // Samma smala-intervall-spärr som i Träning/Tävling, annars ger Test alltid 10 poäng
+    // per rätt svar även om multiplikationens faktorer är för lätta att memorera.
+    var reward = (this.mode === 'multi') ? game.getMultiplicationReward(10, min, max, minb, maxb) : 10;
+
     ret = {
       q: {
         tal1: tal1,
@@ -1088,7 +1094,8 @@ var game = {
         question: '' + tal1 + ' '+char+' ' + tal2 + ' ='
       },
       a: {
-        answer: answer
+        answer: answer,
+        reward: reward
       }
     }
 
@@ -1153,12 +1160,15 @@ var game = {
     this.currentAnswer = correctAnswer;
     this.currentCorrectReward = correctAnswer;
 
+    var reward = (this.mode === 'multi') ? game.getMultiplicationReward(10, min, max) : 10;
+
     return {
       q: {
         question: questionText
       },
       a: {
-        answer: correctAnswer
+        answer: correctAnswer,
+        reward: reward
       }
     };
   },
@@ -1226,14 +1236,14 @@ var game = {
 
   // Tumme upp och hjärta är alltid med. Nästa par emojis låses upp vid respektive poäng i
   // emojiTierThresholds - trösklarna växer exponentiellt (tätt i början, långt mellan i toppen,
-  // ~40000 poäng för att låsa upp allt) så det inte tar en evighet att komma igång men känns
+  // ~60000 poäng för att låsa upp allt) så det inte tar en evighet att komma igång men känns
   // som en riktig bedrift att nå toppen. Träning och Tävling har varsin egen samling.
   standardEmojis: ['👍', '❤️'],
   emojiTierThresholds: [
-    0, 300, 350, 410, 470, 550, 640, 750, 870, 1020,
-    1190, 1380, 1610, 1880, 2190, 2550, 2970, 3460, 4040, 4700,
-    5480, 6390, 7440, 8670, 10100, 11770, 13720, 15980, 18620, 21700,
-    25280, 29460, 34330, 40000
+    0, 300, 350, 420, 490, 580, 690, 810, 960, 1130,
+    1330, 1570, 1850, 2190, 2580, 3050, 3600, 4240, 5010, 5910,
+    6970, 8230, 9710, 11460, 13520, 15950, 18830, 22220, 26220, 30940,
+    36510, 43090, 50840, 60000
   ],
   emojiTierEmojisByMode: {
     training: [
