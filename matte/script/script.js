@@ -1050,6 +1050,21 @@ $(document).ready(function() {
     }
   }, game));
 
+  // Håll .toolbar-fixed synlig högst upp i den synliga vyn, även när tangentbordet
+  // är öppet i iOS Safari (då flyttas visual viewport utan att layout viewport scrollar)
+  var fixedToolbar = document.querySelector('.toolbar-fixed');
+  if (fixedToolbar && window.visualViewport) {
+    var updateFixedToolbarPosition = function(){
+      var vv = window.visualViewport;
+      fixedToolbar.style.top = vv.offsetTop + 'px';
+      fixedToolbar.style.left = vv.offsetLeft + 'px';
+      fixedToolbar.style.width = vv.width + 'px';
+    };
+    window.visualViewport.addEventListener('resize', updateFixedToolbarPosition);
+    window.visualViewport.addEventListener('scroll', updateFixedToolbarPosition);
+    updateFixedToolbarPosition();
+  }
+
 
 
   $('.meter').on('click', function(){
