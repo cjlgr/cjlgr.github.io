@@ -25,25 +25,25 @@ var game = {
   mix: true,
   mode: 'multi',
   testmode: {
-    infant: {
+    easy: {
       time: 100,
       numberOfQuestions: 5
     },
-    easy: {
+    medium: {
       time: 100,
       numberOfQuestions: 10
     },
-    medium: {
+    hard: {
       time: 200,
       numberOfQuestions: 30
     },
-    hard: {
+    custom: {
       time: 300,
       numberOfQuestions: 50
     },
   },
   levels: {
-    infant: [
+    easy: [
       {
         mode: 'plus',
         char: '+',
@@ -66,7 +66,7 @@ var game = {
         time: 45
       }
     ],
-    easy: [
+    medium: [
       {
         mode: 'plus',
         char: '+',
@@ -89,7 +89,7 @@ var game = {
         time: 40
       }
     ],
-    medium: [
+    hard: [
       {
         mode: 'plus',
         char: '+',
@@ -112,7 +112,7 @@ var game = {
         time: 40
       }
     ],
-    hard: [
+    custom: [
       {
         mode: 'plus',
         char: '+',
@@ -183,13 +183,12 @@ var game = {
   },
 
   // Kort, positionsbaserad kod för elevlänken:
-  // ?s=<träning><tävling><test><lätt><normal><svår><anpassad><plus><minus><gånger><x><plus-f><minus-f><gånger-f><x-f><visuell hjälp>-<mina>-<maxa>-<minb>-<maxb>-<antal frågor>-<tid>
+  // ?s=<träning><tävling><test><lätt><normal><svår><anpassad><plus><minus><gånger><x><plus-f><minus-f><gånger-f><x-f><visuell hjälp>-<minplus>-<maxplus>-<minminus>-<maxminus>-<mina>-<maxa>-<minb>-<maxb>-<antal frågor>-<tid>
   // (positionerna med "-f" är vilka räknesätt som är förvalda/ikryssade av de tillåtna)
-  // t.ex. s=yynyyynynnnnyny y-0-10-0-10-50-300 (utan mellanslaget) -> träning på, tävling på, test av, eleven
-  // får välja mellan Lätt/Normal/Svår (inte Anpassad), bara Gånger tillåtet (och därmed förvalt/låst),
-  // visuell hjälp vid multiplikation på, multiplikation 0-10 x 0-10, test med 50 frågor på 300 sekunder
-  difficultyOrder: ['infant', 'easy', 'medium', 'hard'],
-  difficultyLabels: { infant: 'Lätt', easy: 'Mellan', medium: 'Svår', hard: 'Anpassad' },
+  // De numeriska delarna efter flaggorna är alla Anpassad-inställningar: plusintervall, minusintervall,
+  // multiplikationens två faktorintervall, samt antal testfrågor och testtid
+  difficultyOrder: ['easy', 'medium', 'hard', 'custom'],
+  difficultyLabels: { easy: 'Lätt', medium: 'Mellan', hard: 'Svår', custom: 'Anpassad' },
   methodLabels: ['Plus', 'Minus', 'Gånger', 'Räkna med X'],
 
   // Kopplar ihop Tillåtet/Förval per räknesätt i lärarvyn så de inte kan hamna i motsägelse:
@@ -215,7 +214,7 @@ var game = {
     var saved = localStorage.getItem('studentViewSettings');
     var settings = saved ? JSON.parse(saved) : {
       training: true, contest: true, test: true,
-      allowInfant: true, allowEasy: true, allowMedium: true, allowHard: true,
+      allowEasy: true, allowMedium: true, allowHard: true, allowCustom: true,
       allowAdd: true, allowSub: true, allowMult: true, allowX: true,
       defaultAdd: true, defaultSub: false, defaultMult: false, defaultX: false,
       forceX: false
@@ -224,10 +223,10 @@ var game = {
     $('#checkShowTraining').prop('checked', settings.training);
     $('#checkShowContest').prop('checked', settings.contest);
     $('#checkShowTest').prop('checked', settings.test);
-    $('#checkAllowInfant').prop('checked', settings.allowInfant);
     $('#checkAllowEasy').prop('checked', settings.allowEasy);
     $('#checkAllowMedium').prop('checked', settings.allowMedium);
     $('#checkAllowHard').prop('checked', settings.allowHard);
+    $('#checkAllowCustom').prop('checked', settings.allowCustom);
     $('#checkAllowAdd').prop('checked', settings.allowAdd);
     $('#checkAllowSub').prop('checked', settings.allowSub);
     $('#checkAllowMult').prop('checked', settings.allowMult);
@@ -251,10 +250,10 @@ var game = {
       training: $('#checkShowTraining').is(':checked'),
       contest: $('#checkShowContest').is(':checked'),
       test: $('#checkShowTest').is(':checked'),
-      allowInfant: $('#checkAllowInfant').is(':checked'),
       allowEasy: $('#checkAllowEasy').is(':checked'),
       allowMedium: $('#checkAllowMedium').is(':checked'),
       allowHard: $('#checkAllowHard').is(':checked'),
+      allowCustom: $('#checkAllowCustom').is(':checked'),
       allowAdd: $('#checkAllowAdd').is(':checked'),
       allowSub: $('#checkAllowSub').is(':checked'),
       allowMult: $('#checkAllowMult').is(':checked'),
@@ -277,10 +276,10 @@ var game = {
     var flags = (settings.training ? 'y' : 'n') +
       (settings.contest ? 'y' : 'n') +
       (settings.test ? 'y' : 'n') +
-      (settings.allowInfant ? 'y' : 'n') +
       (settings.allowEasy ? 'y' : 'n') +
       (settings.allowMedium ? 'y' : 'n') +
       (settings.allowHard ? 'y' : 'n') +
+      (settings.allowCustom ? 'y' : 'n') +
       (settings.allowAdd ? 'y' : 'n') +
       (settings.allowSub ? 'y' : 'n') +
       (settings.allowMult ? 'y' : 'n') +
@@ -292,12 +291,15 @@ var game = {
       (game.hideVisualHelp ? 'n' : 'y') +
       (settings.forceX ? 'y' : 'n');
 
-    var hardLevel = game.levels.hard[2];
-    var hardTest = game.testmode.hard;
-    var mult = [hardLevel.min, hardLevel.max, hardLevel.minb, hardLevel.maxb];
-    var test = [hardTest.numberOfQuestions, hardTest.time];
+    var customPlus = game.levels.custom[0];
+    var customMinus = game.levels.custom[1];
+    var customMulti = game.levels.custom[2];
+    var customTest = game.testmode.custom;
+    var plusMinus = [customPlus.min, customPlus.max, customMinus.min, customMinus.max];
+    var mult = [customMulti.min, customMulti.max, customMulti.minb, customMulti.maxb];
+    var test = [customTest.numberOfQuestions, customTest.time];
 
-    return [flags].concat(mult).concat(test).join('-');
+    return [flags].concat(plusMinus).concat(mult).concat(test).join('-');
   },
 
   // Applicera ?s=-koden på elevens vy (döljer knappar/räknesätt/svårighetsgrader
@@ -326,7 +328,7 @@ var game = {
     if (flags.charAt(2) === 'n') { $('#testButton').hide(); }
 
     // svårighetsgrader eleven får välja på (positioner 3-6)
-    var difficultyRadioIds = { infant: '#radioInfant', easy: '#radioEasy', medium: '#radioMedium', hard: '#radioHard' };
+    var difficultyRadioIds = { easy: '#radioEasy', medium: '#radioMedium', hard: '#radioHard', custom: '#radioCustom' };
     var allowedDifficulties = [];
     for (var d = 0; d < game.difficultyOrder.length; d++) {
       if (flags.charAt(3 + d) === 'y') {
@@ -395,30 +397,46 @@ var game = {
     }
 
     // valfria multiplikations- och testinställningar (Anpassad), på formen -mina-maxa-minb-maxb-antal-tid
-    if (parts.length === 7) {
-      var mina = parseInt(parts[1], 10);
-      var maxa = parseInt(parts[2], 10);
-      var minb = parseInt(parts[3], 10);
-      var maxb = parseInt(parts[4], 10);
-      var numberOfQuestions = parseInt(parts[5], 10);
-      var time = parseInt(parts[6], 10);
+    if (parts.length === 11) {
+      var minplus = parseInt(parts[1], 10);
+      var maxplus = parseInt(parts[2], 10);
+      var minminus = parseInt(parts[3], 10);
+      var maxminus = parseInt(parts[4], 10);
+      var mina = parseInt(parts[5], 10);
+      var maxa = parseInt(parts[6], 10);
+      var minb = parseInt(parts[7], 10);
+      var maxb = parseInt(parts[8], 10);
+      var numberOfQuestions = parseInt(parts[9], 10);
+      var time = parseInt(parts[10], 10);
 
+      if (!isNaN(minplus) && !isNaN(maxplus)) {
+        game.levels.custom[0].min = minplus;
+        game.levels.custom[0].max = maxplus;
+        $('[name=minplus]').val(minplus);
+        $('[name=maxplus]').val(maxplus);
+      }
+      if (!isNaN(minminus) && !isNaN(maxminus)) {
+        game.levels.custom[1].min = minminus;
+        game.levels.custom[1].max = maxminus;
+        $('[name=minminus]').val(minminus);
+        $('[name=maxminus]').val(maxminus);
+      }
       if (!isNaN(mina) && !isNaN(maxa) && !isNaN(minb) && !isNaN(maxb)) {
-        game.levels.hard[2].min = mina;
-        game.levels.hard[2].max = maxa;
-        game.levels.hard[2].minb = minb;
-        game.levels.hard[2].maxb = maxb;
+        game.levels.custom[2].min = mina;
+        game.levels.custom[2].max = maxa;
+        game.levels.custom[2].minb = minb;
+        game.levels.custom[2].maxb = maxb;
         $('[name=mina]').val(mina);
         $('[name=maxa]').val(maxa);
         $('[name=minb]').val(minb);
         $('[name=maxb]').val(maxb);
       }
       if (!isNaN(numberOfQuestions)) {
-        game.testmode.hard.numberOfQuestions = numberOfQuestions;
+        game.testmode.custom.numberOfQuestions = numberOfQuestions;
         $('[name=test-nbr-of-questions]').val(numberOfQuestions);
       }
       if (!isNaN(time)) {
-        game.testmode.hard.time = time;
+        game.testmode.custom.time = time;
         $('[name=test-time]').val(time);
       }
     }
@@ -434,7 +452,7 @@ var game = {
 
 
 
-  // Load settings: load settings from localstorage. If no setting is stored, then addition should be set to true and the other ones to false. Difficulty should be set to infant.
+  // Load settings: load settings from localstorage. If no setting is stored, then addition should be set to true and the other ones to false. Difficulty should be set to easy.
   loadSettings: function(){
     var addition = localStorage.getItem('addition') === 'true' ? true : false;
     var subtraction = localStorage.getItem('subtraction') === 'true' ? true : false;
@@ -447,7 +465,7 @@ var game = {
     }
     
     if (!difficulty) {
-      difficulty = 'infant';
+      difficulty = 'easy';
     } 
 
     $('#checkAdd').prop('checked', addition);
@@ -461,6 +479,10 @@ var game = {
   // fields låter respektive vy peka ut sina egna input-element; standard är de vanliga.
   getMultTestFields: function(fields){
     return fields || {
+      minplus: $('[name=minplus]'),
+      maxplus: $('[name=maxplus]'),
+      minminus: $('[name=minminus]'),
+      maxminus: $('[name=maxminus]'),
       mina: $('[name=mina]'),
       maxa: $('[name=maxa]'),
       minb: $('[name=minb]'),
@@ -472,6 +494,10 @@ var game = {
 
   getTeacherMultTestFields: function(){
     return {
+      minplus: $('#t-minplus'),
+      maxplus: $('#t-maxplus'),
+      minminus: $('#t-minminus'),
+      maxminus: $('#t-maxminus'),
       mina: $('#t-mina'),
       maxa: $('#t-maxa'),
       minb: $('#t-minb'),
@@ -495,55 +521,109 @@ var game = {
     game.hideVisualHelp = hideVisualHelp;
   },
 
+  nonNegativeInt: function(value){
+    var parsed = parseInt(value, 10);
+    if (isNaN(parsed) || parsed < 0) {
+      return 0;
+    }
+    return parsed;
+  },
+
   saveCustomSettings: function(fields){
     fields = game.getMultTestFields(fields);
-    localStorage.setItem('mina', fields.mina.val());
-    localStorage.setItem('minb', fields.minb.val());
-    localStorage.setItem('maxa', fields.maxa.val());
-    localStorage.setItem('maxb', fields.maxb.val());
-    game.levels.hard[2].min = parseInt(localStorage.getItem('mina'));
-    game.levels.hard[2].max = parseInt(localStorage.getItem('maxa'));
-    game.levels.hard[2].minb = parseInt(localStorage.getItem('minb'));
-    game.levels.hard[2].maxb = parseInt(localStorage.getItem('maxb'));
+    var minplus = game.nonNegativeInt(fields.minplus.val());
+    var maxplus = game.nonNegativeInt(fields.maxplus.val());
+    var minminus = game.nonNegativeInt(fields.minminus.val());
+    var maxminus = game.nonNegativeInt(fields.maxminus.val());
+    fields.minplus.val(minplus);
+    fields.maxplus.val(maxplus);
+    fields.minminus.val(minminus);
+    fields.maxminus.val(maxminus);
+    localStorage.setItem('minplus', minplus);
+    localStorage.setItem('maxplus', maxplus);
+    localStorage.setItem('minminus', minminus);
+    localStorage.setItem('maxminus', maxminus);
+    game.levels.custom[0].min = minplus;
+    game.levels.custom[0].max = maxplus;
+    game.levels.custom[1].min = minminus;
+    game.levels.custom[1].max = maxminus;
 
-    localStorage.setItem('testNbrOfQuestions', fields.qty.val());
-    localStorage.setItem('testTime', fields.time.val());
-    game.testmode.hard.numberOfQuestions = parseInt(localStorage.getItem('testNbrOfQuestions'));
-    game.testmode.hard.time = parseInt(localStorage.getItem('testTime'));
+    var mina = game.nonNegativeInt(fields.mina.val());
+    var maxa = game.nonNegativeInt(fields.maxa.val());
+    var minb = game.nonNegativeInt(fields.minb.val());
+    var maxb = game.nonNegativeInt(fields.maxb.val());
+    fields.mina.val(mina);
+    fields.maxa.val(maxa);
+    fields.minb.val(minb);
+    fields.maxb.val(maxb);
+    localStorage.setItem('mina', mina);
+    localStorage.setItem('minb', minb);
+    localStorage.setItem('maxa', maxa);
+    localStorage.setItem('maxb', maxb);
+    game.levels.custom[2].min = mina;
+    game.levels.custom[2].max = maxa;
+    game.levels.custom[2].minb = minb;
+    game.levels.custom[2].maxb = maxb;
+
+    var numberOfQuestions = game.nonNegativeInt(fields.qty.val());
+    var time = game.nonNegativeInt(fields.time.val());
+    fields.qty.val(numberOfQuestions);
+    fields.time.val(time);
+    localStorage.setItem('testNbrOfQuestions', numberOfQuestions);
+    localStorage.setItem('testTime', time);
+    game.testmode.custom.numberOfQuestions = numberOfQuestions;
+    game.testmode.custom.time = time;
   },
 
   loadCustomDifficultySettings: function(fields){
     fields = game.getMultTestFields(fields);
+
+    if (localStorage.getItem('minplus')) {
+      fields.minplus.val(localStorage.getItem('minplus'));
+      fields.maxplus.val(localStorage.getItem('maxplus'));
+      fields.minminus.val(localStorage.getItem('minminus'));
+      fields.maxminus.val(localStorage.getItem('maxminus'));
+      game.levels.custom[0].min = parseInt(localStorage.getItem('minplus'));
+      game.levels.custom[0].max = parseInt(localStorage.getItem('maxplus'));
+      game.levels.custom[1].min = parseInt(localStorage.getItem('minminus'));
+      game.levels.custom[1].max = parseInt(localStorage.getItem('maxminus'));
+    } else {
+      fields.minplus.val(game.levels.custom[0].min);
+      fields.maxplus.val(game.levels.custom[0].max);
+      fields.minminus.val(game.levels.custom[1].min);
+      fields.maxminus.val(game.levels.custom[1].max);
+    }
+
     // Load min/max values
     if (localStorage.getItem('mina')) {
       fields.mina.val(localStorage.getItem('mina'));
       fields.maxa.val(localStorage.getItem('maxa'));
       fields.minb.val(localStorage.getItem('minb'));
       fields.maxb.val(localStorage.getItem('maxb'));
-      game.levels.hard[2].min = parseInt(localStorage.getItem('mina'));
-      game.levels.hard[2].max = parseInt(localStorage.getItem('maxa'));
-      game.levels.hard[2].minb = parseInt(localStorage.getItem('minb'));
-      game.levels.hard[2].maxb = parseInt(localStorage.getItem('maxb'));
+      game.levels.custom[2].min = parseInt(localStorage.getItem('mina'));
+      game.levels.custom[2].max = parseInt(localStorage.getItem('maxa'));
+      game.levels.custom[2].minb = parseInt(localStorage.getItem('minb'));
+      game.levels.custom[2].maxb = parseInt(localStorage.getItem('maxb'));
     } else {
       // Load defaults
-      fields.mina.val(game.levels.hard[2].min);
-      fields.maxa.val(game.levels.hard[2].max);
-      fields.minb.val(game.levels.hard[2].minb);
-      fields.maxb.val(game.levels.hard[2].maxb);
+      fields.mina.val(game.levels.custom[2].min);
+      fields.maxa.val(game.levels.custom[2].max);
+      fields.minb.val(game.levels.custom[2].minb);
+      fields.maxb.val(game.levels.custom[2].maxb);
     }
 
     if (localStorage.getItem('testNbrOfQuestions')) { // test-nbr-of-questions
       fields.qty.val(localStorage.getItem('testNbrOfQuestions'));
-      game.testmode.hard.numberOfQuestions = parseInt(localStorage.getItem('testNbrOfQuestions'));
+      game.testmode.custom.numberOfQuestions = parseInt(localStorage.getItem('testNbrOfQuestions'));
     } else {
-      fields.qty.val(game.testmode.hard.numberOfQuestions);
+      fields.qty.val(game.testmode.custom.numberOfQuestions);
     }
 
     if (localStorage.getItem('testTime')) { // test-time
       fields.time.val(localStorage.getItem('testTime'));
-      game.testmode.hard.time = parseInt(localStorage.getItem('testTime'));
+      game.testmode.custom.time = parseInt(localStorage.getItem('testTime'));
     } else {
-      fields.time.val(game.testmode.hard.time);
+      fields.time.val(game.testmode.custom.time);
     }
 
   },
@@ -793,10 +873,12 @@ var game = {
     return value;
   },
 
-  // Om faktorernas intervall är för smalt (t.ex. samma tal varje gång i "Anpassad") går svaret
-  // att memorera direkt istället för att räknas ut - då ska inte poängen få vara hög bara för att
-  // faktorerna råkar vara stora tal. Dra ner belöningen kraftigt om det finns för få möjliga frågor.
-  getMultiplicationReward: function(answer, min, max, minb, maxb){
+  // Om talintervallet är för smalt (t.ex. samma tal varje gång i "Anpassad") går svaret att
+  // memorera direkt istället för att räknas ut - då ska inte poängen få vara hög bara för att
+  // talen råkar vara stora. Dra ner belöningen kraftigt om det finns för få möjliga frågor.
+  // Gäller plus, minus och multiplikation, så att ingen av dem går att "rigga" i Anpassad
+  // (t.ex. minplus=maxplus för att alltid få samma, stora, memorerade svar).
+  getNarrowRangeReward: function(answer, min, max, minb, maxb){
     var rangeA = max - min + 1;
     var rangeB = (minb !== undefined && maxb !== undefined) ? (maxb - minb + 1) : rangeA;
     var comboCount = rangeA * rangeB;
@@ -930,7 +1012,7 @@ var game = {
     }
 
     
-    var xReward = (this.mode === 'multi') ? this.getMultiplicationReward(answer, min, max) : answer;
+    var xReward = this.getNarrowRangeReward(answer, min, max);
 
     if (orderOfX === 0) {
       this.currentAnswer = tal2;
@@ -1015,7 +1097,7 @@ var game = {
 
 
     this.currentAnswer = answer;
-    this.currentCorrectReward = (this.mode === 'multi') ? this.getMultiplicationReward(answer, min, max, minb, maxb) : answer;
+    this.currentCorrectReward = this.getNarrowRangeReward(answer, min, max, minb, maxb);
 
 
     q = {
@@ -1083,8 +1165,8 @@ var game = {
     this.currentCorrectReward = answer;
 
     // Samma smala-intervall-spärr som i Träning/Tävling, annars ger Test alltid 10 poäng
-    // per rätt svar även om multiplikationens faktorer är för lätta att memorera.
-    var reward = (this.mode === 'multi') ? game.getMultiplicationReward(10, min, max, minb, maxb) : 10;
+    // per rätt svar även om talintervallet är för smalt/lätt att memorera.
+    var reward = game.getNarrowRangeReward(10, min, max, minb, maxb);
 
     ret = {
       q: {
@@ -1160,7 +1242,7 @@ var game = {
     this.currentAnswer = correctAnswer;
     this.currentCorrectReward = correctAnswer;
 
-    var reward = (this.mode === 'multi') ? game.getMultiplicationReward(10, min, max) : 10;
+    var reward = game.getNarrowRangeReward(10, min, max);
 
     return {
       q: {
@@ -1240,7 +1322,7 @@ var game = {
   // som en riktig bedrift att nå toppen. Träning och Tävling har varsin egen samling.
   standardEmojis: ['👍', '❤️'],
   emojiTierThresholds: [
-    0, 300, 350, 420, 490, 580, 690, 810, 960, 1130,
+    0, 100, 200, 300, 400, 500, 600, 700, 800, 1130,
     1330, 1570, 1850, 2190, 2580, 3050, 3600, 4240, 5010, 5910,
     6970, 8230, 9710, 11460, 13520, 15950, 18830, 22220, 26220, 30940,
     36510, 43090, 50840, 60000
@@ -1555,6 +1637,21 @@ var game = {
       seconds = '0'+seconds;
     }
     return minutes + ':' + seconds;
+  },
+
+  // t.ex. 90 -> "1 minut och 30 sekunder", 120 -> "2 minuter", 45 -> "45 sekunder"
+  formatDuration: function(totalSeconds){
+    var minutes = Math.floor(totalSeconds / 60);
+    var secs = totalSeconds % 60;
+    var minutesText = minutes + ' ' + game.pluralize(minutes, 'minut', 'minuter');
+    var secsText = secs + ' ' + game.pluralize(secs, 'sekund', 'sekunder');
+    if (minutes === 0) {
+      return secsText;
+    }
+    if (secs === 0) {
+      return minutesText;
+    }
+    return minutesText + ' och ' + secsText;
   }
 
 
@@ -1563,6 +1660,14 @@ var game = {
 
 
 $(document).ready(function() {
+  // Visa splash-skärmen med loggan i 3 sekunder innan den tonas bort
+  setTimeout(function(){
+    $('#splashScreen').addClass('fade-out');
+    setTimeout(function(){
+      $('#splashScreen').remove();
+    }, 600);
+  }, 3000);
+
   game.loadSettings();
   game.loadCustomDifficultySettings();
   game.loadHideVisualHelpSetting();
@@ -1587,6 +1692,15 @@ $(document).ready(function() {
 
   // Applicera elevlänkens ?s=-inställningar (döljer knappar/svårighetsval, sätter svårighetsgrad)
   game.applyStudentViewFromUrl();
+
+  // Hindra minustecken i inställningarnas talintervall (plus/minus/multiplikation/test) -
+  // dessa ska aldrig kunna vara negativa
+  $(document).on('input', '.no-negative', function(){
+    var value = $(this).val();
+    if (value.indexOf('-') !== -1) {
+      $(this).val(value.replace(/-/g, ''));
+    }
+  });
 
   var settingsButton = $('#settingsButton');
   settingsButton.on('click', function(e){
@@ -1655,6 +1769,13 @@ $(document).ready(function() {
   var teacherClearSettingsButton = $('#teacherClearSettings');
   teacherClearSettingsButton.on('click', function(e){
     e.preventDefault();
+    if (!window.confirm('Är du säker? Alla inställningar på den här sidan återställs till standardvärden.')) {
+      return;
+    }
+    $('#t-minplus').val(0);
+    $('#t-maxplus').val(100);
+    $('#t-minminus').val(0);
+    $('#t-maxminus').val(100);
     $('#t-mina').val(0);
     $('#t-maxa').val(10);
     $('#t-minb').val(0);
@@ -1682,10 +1803,14 @@ $(document).ready(function() {
     $('#checkDefaultX').prop('disabled', false);
     game.syncMethodToggles();
 
-    $('#checkAllowInfant').prop('checked', false);
-    $('#checkAllowEasy').prop('checked', true);
-    $('#checkAllowMedium').prop('checked', false);
+    $('#checkAllowEasy').prop('checked', false);
+    $('#checkAllowMedium').prop('checked', true);
     $('#checkAllowHard').prop('checked', false);
+    $('#checkAllowCustom').prop('checked', false);
+
+    game.saveCustomSettings(game.getTeacherMultTestFields());
+    game.saveHideVisualHelpSetting($('#t-checkHideVisualHelp'));
+    game.saveStudentViewSettings();
   });
 
 
@@ -1742,6 +1867,13 @@ $(document).ready(function() {
   var clearSettingsButton = $('#clearSettings');
   clearSettingsButton.on('click', function(e){
     e.preventDefault();
+    if (!window.confirm('Är du säker? Alla inställningar på den här sidan återställs till standardvärden.')) {
+      return;
+    }
+    $('[name=minplus]').val(0);
+    $('[name=maxplus]').val(100);
+    $('[name=minminus]').val(0);
+    $('[name=maxminus]').val(100);
     $('[name=mina]').val(0);
     $('[name=maxa]').val(10);
     $('[name=minb]').val(0);
@@ -1749,6 +1881,9 @@ $(document).ready(function() {
     $('[name=test-nbr-of-questions]').val(50);
     $('[name=test-time]').val(300);
     $('#checkHideVisualHelp').prop('checked', false);
+
+    game.saveCustomSettings();
+    game.saveHideVisualHelpSetting();
   });
 
   var collectionButton = $('#collectionButton');
@@ -1814,6 +1949,11 @@ $(document).ready(function() {
 
     var difficulty = $('[name=difficulty]:checked').val();
     $('#testInfoDifficulty').text(game.difficultyLabels[difficulty]);
+
+    var numberOfQuestions = game.testmode[difficulty].numberOfQuestions;
+    var duration = game.formatDuration(game.testmode[difficulty].time);
+    $('#testInfoDescription').html('Du ska försöka svara på <strong>' + numberOfQuestions + ' frågor</strong>. ' +
+      'Det går på <strong>tid</strong> och du har <strong>' + duration + '</strong> på dig!');
 
     var methodLabels = [];
     if ($('#checkAdd').is(':checked')) { methodLabels.push('Plus'); }

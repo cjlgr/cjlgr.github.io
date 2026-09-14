@@ -34,7 +34,7 @@ a {
 #menu-score-wrapper {
   margin: 50px auto 0;
   max-width: 300px;
-  background-color: #5c5b5b;
+  background-color: #6b6b65;
   border-radius: 5px;
   padding: 20px;
 }
@@ -97,6 +97,14 @@ button.settings-button {
   width: 60px;
   margin-right: 0;
   padding-right: 0;
+}
+
+.menu-logo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 150px;
+  height: auto;
 }
 
 #teacherButton {
@@ -633,7 +641,7 @@ input[type=checkbox]:disabled+label {
   background-color: #27ff00;
 }
 .difficulty input:checked+.meter-low+label {
-  color: #51b2ff;
+  color: #8bccff;
 }
 .difficulty input:checked+.meter-low {
   background-color: #2196f3;
@@ -802,7 +810,7 @@ input.correct-answer {
   width: 100%;
   box-sizing: border-box;
   padding: 25px 20px;
-  background-color: #4e4e4e;
+  background-color: #7e7e7e;
   border-bottom: 4px solid #242624;
   border-radius: 8px;
   box-shadow: 0 0 19px 0px rgba(0,0,0,0.5);
@@ -823,7 +831,7 @@ input.correct-answer {
   top: 100px;
   height: 100px;
   line-height: 100px;
-  background-color: #4e4e4e;
+  background-color: #7e7e7e;
   border-bottom: 4px solid #242624;
   box-shadow: 0 0 19px 0px rgba(0,0,0,0.5);
 }
@@ -907,4 +915,28 @@ input.correct-answer {
   50% {
     transform: translateY(-14px) rotate(4deg);
   }
+}
+
+#splashScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#splashScreen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+#splashScreen img {
+  width: 320px;
+  max-width: 80%;
+  height: auto;
 }
