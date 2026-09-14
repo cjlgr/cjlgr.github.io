@@ -7,30 +7,8 @@
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#757571">
 
-<!-- Google Tag Manager -->
-  <script>
-    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-NFX72M42');
-  </script>
-
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LC4PC7E8CE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-LC4PC7E8CE');
-  </script>
-  <!-- End Google Tag Manager -->
-
-
-
   <link rel="apple-touch-icon" sizes="180x180" href="gfx/icon.png">
-  <link href="style/master.css?v=2" rel="stylesheet" type="text/css">
+  <link href="style/master.css?v=13" rel="stylesheet" type="text/css">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,18 +21,8 @@
 </head>
 <body>
 
-  <!-- Google Tag Manager (noscript) -->
-  <noscript>
-    <iframe 
-      src="https://www.googletagmanager.com/ns.html?id=GTM-NFX72M42"
-      height="0" 
-      width="0" 
-      style="display:none;visibility:hidden"
-    ></iframe>
-  </noscript>
-  <!-- End Google Tag Manager (noscript) -->
-
   <div id="menu">
+    <button class="btn-transparent settings-button" id="teacherButton"><i class="fa fa-graduation-cap"></i></button>
     <button class="btn-transparent settings-button" id="settingsButton"><i class="fa fa-cog"></i></button>
     <h3 style="margin-bottom: 2px; margin-top: 5px;" class="text-center">Välkommen till</h3>
     <h1 style="margin-top: 2px; margin-bottom: 20px;" class="text-center">MATTESPELET!</h1>
@@ -73,12 +41,13 @@
       </div>
     </div>
     <br>
-    <div class="difficulty">
+    <div class="difficulty" id="menuDifficulty">
       <div class="radio-wrapper"><input name="difficulty" value="infant" id="radioInfant" type="radio" checked><div class="meter meter-infant"></div><label for="radioInfant">Lätt</label></div>
-      <div class="radio-wrapper"><input name="difficulty" value="easy" id="radioEasy" type="radio"><div class="meter meter-low"></div><label for="radioEasy">Normal</label></div>
+      <div class="radio-wrapper"><input name="difficulty" value="easy" id="radioEasy" type="radio"><div class="meter meter-low"></div><label for="radioEasy">Mellan</label></div>
       <div class="radio-wrapper"><input name="difficulty" value="medium" id="radioMedium" type="radio"><div class="meter meter-medium"></div><label for="radioMedium">Svår</label></div>
-      <div class="radio-wrapper"><input name="difficulty" value="hard" id="radioHard" type="radio"><div class="meter meter-high"></div><label for="radioHard">Expert</label></div>
+      <div class="radio-wrapper"><input name="difficulty" value="hard" id="radioHard" type="radio"><i class="fa fa-star meter meter-high"></i><label for="radioHard">Anpassad</label></div>
     </div>
+    <div id="studentModeInfo" class="text-center" style="display:none; max-width:280px; margin:0 auto 20px; background-color:#5c5b5b; border-radius:5px; padding:10px; font-size:0.75em; color:#ddd;"></div>
     <div id="menu-score-wrapper">
       <div style="font-size: 1.2em; padding-bottom: 14px; text-align: center;">MINA POÄNG</div>
       <span class="score-wrapper"><span id="menu-score">0</span></span>
@@ -96,7 +65,7 @@
     <p class="text-center" style="color: #3c3c3a">Justera <strong>storleken på faktorerna</strong> <br>för svårighetsnivå 
       <span 
         style="color: #ff5e5e; background-color: #595955; padding: 1px 10px 3px 10px; border-radius: 5px;"
-      >Expert</span> 
+      >Anpassad</span> 
     </p>
 
     <div class="field-group field-group-inline">
@@ -117,12 +86,14 @@
       </div>
     </div>
 
+    <div class="text-center" style="margin-top: 20px;"><input id="checkHideVisualHelp" type="checkbox"><label for="checkHideVisualHelp"><i class="fa fa-check-square"></i><i class="fa fa-square"></i> Dölj visuell hjälp</label></div>
+
     <h3 class="text-center" style="margin-top: 80px;">Test</h3>
     <p class="text-center" style="color: #3c3c3a">
       Justera <strong>tid</strong> och <strong>antal frågor</strong> vid <br>test för svårighetsnivå
       <span 
         style="color: #ff5e5e; background-color: #595955; padding: 1px 10px 3px 10px; border-radius: 5px;"
-      >Expert</span> 
+      >Anpassad</span> 
     </p>
 
 
@@ -149,9 +120,136 @@
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
-      <p style="text-align: center;font-size: 0.8em;">Version 1.0.12</p>
+      <p style="text-align: center;font-size: 0.8em;">Version 1.0.52</p>
     </div>
 
+    <div class="field-group" style="margin-top: 50px;">
+      <button id="resetScore" class="btn-danger btn-small-3d">Nollställ poäng</button>
+    </div>
+
+  </div>
+
+  <div id="teacher">
+    <button class="btn-transparent" id="teacherclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
+
+    <h3 class="text-center">Inställningar för multiplikation</h3>
+    <p class="text-center" style="color: #3c3c3a">Justera <strong>storleken på faktorerna</strong> <br>för svårighetsnivå
+      <span
+        style="color: #ff5e5e; background-color: #595955; padding: 1px 10px 3px 10px; border-radius: 5px;"
+      >Anpassad</span>
+    </p>
+
+    <div class="field-group field-group-inline">
+      <div class="form-row">
+        <label style="margin-bottom: 5px;">Intervall, faktor 1</label><br>
+      </div>
+      <div class="form-row">
+        <input id="t-mina" type="number"><span style="text-align: center; width: 50px; color: #3c3c3a; padding-top: 7px;">till</span><input id="t-maxa" type="number">
+      </div>
+    </div>
+
+    <div class="field-group field-group-inline">
+      <div class="form-row">
+        <label style="margin-bottom: 5px;">Intervall, faktor 2</label><br>
+      </div>
+      <div class="form-row">
+        <input id="t-minb" type="number"><span style="text-align: center; width: 50px; color: #3c3c3a; padding-top: 7px;">till</span><input id="t-maxb" type="number">
+      </div>
+    </div>
+
+    <div class="text-center" style="margin-top: 20px;"><input id="t-checkHideVisualHelp" type="checkbox"><label for="t-checkHideVisualHelp"><i class="fa fa-check-square"></i><i class="fa fa-square"></i> Dölj visuell hjälp</label></div>
+
+    <h3 class="text-center" style="margin-top: 80px;">Inställningar för test</h3>
+    <p class="text-center" style="color: #3c3c3a">
+      Justera <strong>tid</strong> och <strong>antal frågor</strong> vid <br>test för svårighetsnivå
+      <span
+        style="color: #ff5e5e; background-color: #595955; padding: 1px 10px 3px 10px; border-radius: 5px;"
+      >Anpassad</span>
+    </p>
+
+    <div class="field-group field-group-inline">
+      <div class="form-row">
+        <div class="form-col" style="margin-right: 20px;">
+          <label style="margin-bottom: 5px;">Antal frågor</label>
+          <input id="t-test-nbr-of-questions" type="number">&nbsp;
+        </div>
+        <div class="form-col">
+          <label style="margin-bottom: 5px;">Tid (sekunder)</label>
+          <input id="t-test-time" type="number">
+        </div>
+      </div>
+    </div>
+
+    <h3 class="text-center" style="margin-top: 80px;">Elevvy</h3>
+    <p class="text-center" style="color: #3c3c3a">Välj vad eleven ska se, skapa sedan en <strong>elevlänk</strong> att dela ut.<br>Länken tar med sig alla inställningar från Multiplikation och Test.</p>
+
+    <div style="margin-bottom: 20px;">
+      <div class="text-center"><input id="checkShowTraining" type="checkbox" checked><label for="checkShowTraining"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Visa Träning</label></div>
+      <div class="text-center"><input id="checkShowContest" type="checkbox" checked><label for="checkShowContest"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Visa Tävling</label></div>
+      <div class="text-center"><input id="checkShowTest" type="checkbox" checked><label for="checkShowTest"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Visa Test</label></div>
+    </div>
+
+    <p class="text-center" style="color: #3c3c3a">Räknesätt<br><span style="font-size: 0.75em;">Tillåtet = eleven får välja det själv. Förval = ikryssat från start (kräver Tillåtet).</span></p>
+    <div class="method-grid">
+      <div class="method-grid-row method-grid-header">
+        <span class="method-grid-name"></span>
+        <span class="method-grid-col">Tillåtet</span>
+        <span class="method-grid-col">Förval</span>
+      </div>
+      <div class="method-grid-row">
+        <span class="method-grid-name">Plus</span>
+        <span class="method-grid-col"><input id="checkAllowAdd" type="checkbox" checked><label for="checkAllowAdd"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i></label></span>
+        <span class="method-grid-col"><input id="checkDefaultAdd" type="checkbox" checked><label for="checkDefaultAdd"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i></label></span>
+      </div>
+      <div class="method-grid-row">
+        <span class="method-grid-name">Minus</span>
+        <span class="method-grid-col"><input id="checkAllowSub" type="checkbox" checked><label for="checkAllowSub"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i></label></span>
+        <span class="method-grid-col"><input id="checkDefaultSub" type="checkbox"><label for="checkDefaultSub"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i></label></span>
+      </div>
+      <div class="method-grid-row">
+        <span class="method-grid-name">Gånger</span>
+        <span class="method-grid-col"><input id="checkAllowMult" type="checkbox" checked><label for="checkAllowMult"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i></label></span>
+        <span class="method-grid-col"><input id="checkDefaultMult" type="checkbox"><label for="checkDefaultMult"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i></label></span>
+      </div>
+      <div class="method-grid-row">
+        <span class="method-grid-name">Räkna med X</span>
+        <span class="method-grid-col"><input id="checkAllowX" type="checkbox" checked><label for="checkAllowX"><i class="fa fa-check-square"></i><i class="fa fa-square"></i></label></span>
+        <span class="method-grid-col"><input id="checkDefaultX" type="checkbox"><label for="checkDefaultX"><i class="fa fa-check-square"></i><i class="fa fa-square"></i></label></span>
+      </div>
+    </div>
+
+    <p class="text-center" style="color: #3c3c3a">Svårighetsgrader eleven får välja på</p>
+    <div style="margin-bottom: 30px;">
+      <div class="text-center"><input id="checkAllowInfant" type="checkbox" checked><label for="checkAllowInfant"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Lätt</label></div>
+      <div class="text-center"><input id="checkAllowEasy" type="checkbox" checked><label for="checkAllowEasy"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Mellan</label></div>
+      <div class="text-center"><input id="checkAllowMedium" type="checkbox" checked><label for="checkAllowMedium"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Svår</label></div>
+      <div class="text-center"><input id="checkAllowHard" type="checkbox" checked><label for="checkAllowHard"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Anpassad</label></div>
+    </div>
+
+    <div class="field-group" style="margin-top: 50px;">
+      <button id="teacherSaveSettings" class="btn-confirm btn-small-3d">Spara</button>
+    </div>
+
+    <div class="field-group" style="margin-top: 20px; margin-bottom: 60px;">
+      <button id="generateStudentLink" class="btn-default btn-small-3d">Skapa elevlänk</button>
+      <div id="studentLinkWrapper" style="display:none; margin-top: 15px;">
+        <textarea id="studentLinkText" readonly rows="3" style="width:100%; box-sizing:border-box; padding:8px; border-radius:4px; border:0; resize:none; font-family:'Inconsolata', monospace; word-break:break-all; white-space:pre-wrap;"></textarea>
+        <div class="field-group" style="margin-top: 10px;">
+          <button id="copyStudentLink" class="btn-default btn-small-3d">Kopiera länk</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group" style="margin-top: 50px;">
+      <p style="text-align: center;font-size: 0.8em;">Version 1.0.52</p>
+    </div>
+
+    <div class="field-group" style="margin-top: 50px;">
+      <button id="teacherResetScore" class="btn-danger btn-small-3d">Nollställ poäng</button>
+    </div>
+    <div class="field-group" style="margin-top: 20px;">
+      <button id="teacherClearSettings" class="btn-danger btn-small-3d">Återställ till standardvärden</button>
+    </div>
   </div>
 
 
@@ -185,7 +283,22 @@
     </div>
   </div>
 
-  <script src="script/script.js?v=3"></script>
+  <div id="testInfoPopup" class="test-info-popup">
+    <div class="test-info-popup-box">
+      <h3 class="text-center">Dags för test!</h3>
+      <p class="text-center">Svårighetsnivå: <strong id="testInfoDifficulty"></strong></p>
+      <p class="text-center">Räknesätt: <strong id="testInfoMethods"></strong></p>
+      <p class="text-center" id="testInfoXWrapper" style="display:none;">Räkna med X: <strong>Ja</strong></p>
+      <div class="text-center" style="margin-top: 40px;">
+        <button id="testInfoStart" class="btn-big btn-3d btn-3d-yellow">Starta</button>
+      </div>
+      <div class="text-center" style="margin-top: 15px;">
+        <button class="btn-transparent" id="testInfoBack"><i class="fa fa-arrow-left"></i> Tillbaka</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script/script.js?v=30"></script>
 
 </body>
 </html>
