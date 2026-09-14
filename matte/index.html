@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#757571">
 
   <link rel="apple-touch-icon" sizes="180x180" href="gfx/icon.png">
-  <link href="style/master.css?v=13" rel="stylesheet" type="text/css">
+  <link href="style/master.css?v=15" rel="stylesheet" type="text/css">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +22,7 @@
 <body>
 
   <div id="menu">
+    <button class="btn-transparent settings-button" id="collectionButton"><i class="fa fa-smile-o"></i></button>
     <button class="btn-transparent settings-button" id="teacherButton"><i class="fa fa-graduation-cap"></i></button>
     <button class="btn-transparent settings-button" id="settingsButton"><i class="fa fa-cog"></i></button>
     <h3 style="margin-bottom: 2px; margin-top: 5px;" class="text-center">Välkommen till</h3>
@@ -120,11 +121,7 @@
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
-      <p style="text-align: center;font-size: 0.8em;">Version 1.0.53</p>
-    </div>
-
-    <div class="field-group" style="margin-top: 50px;">
-      <button id="resetScore" class="btn-danger btn-small-3d">Nollställ poäng</button>
+      <p style="text-align: center;font-size: 0.8em;">Version 1.0.56</p>
     </div>
 
   </div>
@@ -241,17 +238,29 @@
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
-      <p style="text-align: center;font-size: 0.8em;">Version 1.0.53</p>
+      <p style="text-align: center;font-size: 0.8em;">Version 1.0.56</p>
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
-      <button id="teacherResetScore" class="btn-danger btn-small-3d">Nollställ poäng</button>
-    </div>
-    <div class="field-group" style="margin-top: 20px;">
       <button id="teacherClearSettings" class="btn-danger btn-small-3d">Återställ till standardvärden</button>
     </div>
   </div>
 
+  <div id="emojiCollection">
+    <button class="btn-transparent" id="emojiCollectionclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
+
+    <h3 class="text-center">Emojisamling</h3>
+
+    <h4 class="text-center" style="margin-top: 30px;">Träning <span id="collectionTrainingScore" style="color: #3c3c3a; font-size: 0.7em;"></span></h4>
+    <div class="emoji-collection-grid" id="collectionTrainingGrid"></div>
+
+    <h4 class="text-center" style="margin-top: 50px;">Tävling <span id="collectionContestScore" style="color: #3c3c3a; font-size: 0.7em;"></span></h4>
+    <div class="emoji-collection-grid" id="collectionContestGrid"></div>
+
+    <div class="field-group" style="margin-top: 50px; margin-bottom: 60px;">
+      <button id="collectionResetScore" class="btn-danger btn-small-3d">Nollställ poäng</button>
+    </div>
+  </div>
 
 
 
@@ -272,6 +281,7 @@
     </div>
 
     <span class="score-wrapper">Poäng: <span id="score">0</span></span>
+    <div id="emojiProgress" class="emoji-progress" style="display:none;"></div>
   </div>
   <div id="test">
     <div class="toolbar toolbar-fixed">
@@ -298,7 +308,7 @@
     </div>
   </div>
 
-  <script src="script/script.js?v=31"></script>
+  <script src="script/script.js?v=34"></script>
 
 </body>
 </html>

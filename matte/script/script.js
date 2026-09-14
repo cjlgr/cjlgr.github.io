@@ -156,6 +156,19 @@ var game = {
     return game.getUrlParam('t') === 'y';
   },
 
+  // Placerar de synliga ikonerna (kugghjul/mössa/leende) tätt intill varandra uppe till höger,
+  // istället för att lämna tomma luckor efter dolda ikoner.
+  layoutMenuIcons: function(){
+    var order = ['#settingsButton', '#teacherButton', '#collectionButton'];
+    var slot = 0;
+    for (var i = 0; i < order.length; i++) {
+      if ($(order[i]).is(':visible')) {
+        $(order[i]).css('right', (slot * 55) + 'px');
+        slot++;
+      }
+    }
+  },
+
   // Gör elevlänkens kod lite mindre lättläst/redigerbar för en nyfiken elev (ingen riktig säkerhet,
   // bara base64url så att man inte rakt av kan se/ändra "yynyyyn..." i adressfältet).
   base64UrlEncode: function(str){
@@ -573,6 +586,8 @@ var game = {
     }
 
     this.updateScoreText(this.score);
+    this.updateEmojiProgress();
+    $('#emojiProgress').show();
     this.createNewQuestion();
   },
 
@@ -1156,23 +1171,41 @@ var game = {
 
   // Tumme upp och hjärta är alltid med. Var 300:e poäng (index * emojiUnlockStep)
   // låses nästa par emojis upp - ju mer poäng, desto mer exotiska kan dyka upp i bursten.
+  // Träning och Tävling har varsin egen samling så de känns som skilda saker att samla på.
   standardEmojis: ['👍', '❤️'],
   emojiUnlockStep: 300,
-  emojiTierEmojis: [
-    ['😄', '🎉'], ['⭐', '👏'], ['🥳', '🔥'], ['💯', '🍭'], ['🍬', '🍫'],
-    ['🍪', '🍩'], ['🧁', '🍔'], ['🍟', '🌭'], ['🍕', '🌮'], ['🌯', '🍜'],
-    ['🍣', '🍱'], ['🍦', '🍨'], ['🍧', '🍓'], ['🍉', '🍒'], ['🍍', '🥝'],
-    ['🐶', '🐱'], ['🐹', '🐰'], ['🐻', '🐼'], ['🦊', '🐵'], ['🐨', '🐸'],
-    ['🐢', '🦎'], ['🐧', '🦉'], ['🦆', '🐙'], ['🦑', '🦋'], ['🐝', '🐞'],
-    ['🦄', '🐉'], ['🦕', '🦖'], ['🐊', '🦂'], ['🐺', '🦁'], ['🐯', '🐘'],
-    ['🌈', '⚡'], ['🌊', '🌋'], ['🪐', '🚀'], ['💎', '👑']
-  ],
+  emojiTierEmojisByMode: {
+    training: [
+      ['😄', '🎉'], ['⭐', '👏'], ['🥳', '🔥'], ['🍕', '🌮'], ['🦆', '🐙'],
+      ['🍉', '🍒'], ['🍣', '🍱'], ['🐶', '🐱'], ['💯', '🍭'], ['🍍', '🥝'],
+      ['🧁', '🍔'], ['🐯', '🐘'], ['🍟', '🌭'], ['🐹', '🐰'], ['🍧', '🍓'],
+      ['🍦', '🍨'], ['🦕', '🦖'], ['🍪', '🍩'], ['🐺', '🦁'], ['🦄', '🐉'],
+      ['🌊', '🌋'], ['🦑', '🦋'], ['🌯', '🍜'], ['🪐', '🚀'], ['🐢', '🦎'],
+      ['🐨', '🐸'], ['🍬', '🍫'], ['🐻', '🐼'], ['🐧', '🦉'], ['🦊', '🐵'],
+      ['🐝', '🐞'], ['💎', '👑'], ['🐊', '🦂'], ['🌈', '⚡']
+    ],
+    contest: [
+      ['🔥', '💪'], ['🥳', '👏'], ['⚡', '✨'], ['🏈', '⚾'], ['🎇', '🌟'],
+      ['🎿', '⛷️'], ['🏒', '🏑'], ['🤸', '🤾'], ['✈️', '🚀'], ['🏉', '🎱'],
+      ['🤽', '🚴'], ['🎾', '🏐'], ['🏅', '🎖️'], ['🛹', '🏂'], ['🛸', '🥇'],
+      ['🎳', '🏹'], ['🚩', '🎆'], ['🥍', '🏏'], ['🤼', '🤹'], ['🤺', '🥊'],
+      ['🏎️', '🏍️'], ['🏆', '🏁'], ['🥈', '🥉'], ['🚗', '🚁'], ['🥋', '🏋️'],
+      ['🏄', '🏊'], ['⚔️', '🛡️'], ['🧗', '🪂'], ['💫', '🦸'], ['🦹', '🥷'],
+      ['⚽', '🏀'], ['🎯', '🛼'], ['🚵', '🏇'], ['🏓', '🏸']
+    ]
+  },
+
+  // Träning och Tävling har varsin emoji-samling, kopplad till respektive läges poäng
+  getActiveEmojiTiers: function(){
+    return game.contest ? game.emojiTierEmojisByMode.contest : game.emojiTierEmojisByMode.training;
+  },
 
   getUnlockedEmojiPool: function(score){
+    var tiers = game.getActiveEmojiTiers();
     var pool = game.standardEmojis.slice();
-    for (var i = 0; i < game.emojiTierEmojis.length; i++) {
+    for (var i = 0; i < tiers.length; i++) {
       if (score >= i * game.emojiUnlockStep) {
-        pool = pool.concat(game.emojiTierEmojis[i]);
+        pool = pool.concat(tiers[i]);
       }
     }
     return pool;
@@ -1180,14 +1213,59 @@ var game = {
 
   // Emojis vars tier ligger mellan föregående och nya poängen - dvs precis upplåsta av detta svar
   getNewlyUnlockedEmojis: function(previousScore, newScore){
+    var tiers = game.getActiveEmojiTiers();
     var unlocked = [];
-    var maxTierIndex = game.emojiTierEmojis.length - 1;
+    var maxTierIndex = tiers.length - 1;
     var prevTierIndex = Math.min(Math.floor(previousScore / game.emojiUnlockStep), maxTierIndex);
     var newTierIndex = Math.min(Math.floor(newScore / game.emojiUnlockStep), maxTierIndex);
     for (var i = prevTierIndex + 1; i <= newTierIndex; i++) {
-      unlocked = unlocked.concat(game.emojiTierEmojis[i]);
+      unlocked = unlocked.concat(tiers[i]);
     }
     return unlocked;
+  },
+
+  // Visar hur många poäng som är kvar tills nästa emoji-tier låses upp, längst ner på skärmen
+  updateEmojiProgress: function(){
+    var tiers = game.getActiveEmojiTiers();
+    var maxTierIndex = tiers.length - 1;
+    var currentTierIndex = Math.min(Math.floor(game.score / game.emojiUnlockStep), maxTierIndex);
+    if (currentTierIndex >= maxTierIndex) {
+      $('#emojiProgress').html('Alla emojis upplåsta! 🎉');
+      return;
+    }
+    var remaining = (currentTierIndex + 1) * game.emojiUnlockStep - game.score;
+    $('#emojiProgress').html('Poäng kvar till nästa emoji: <strong>' + remaining + '</strong>');
+  },
+
+  // Bygger rutnätet av upplåsta (och kommande, låsta) emojis för en poängsumma
+  buildEmojiCollectionHtml: function(tiers, score){
+    var html = '';
+    for (var i = 0; i < game.standardEmojis.length; i++) {
+      html += '<div class="emoji-collection-item unlocked">' + game.standardEmojis[i] + '</div>';
+    }
+    for (var i = 0; i < tiers.length; i++) {
+      var threshold = i * game.emojiUnlockStep;
+      var unlocked = score >= threshold;
+      for (var j = 0; j < tiers[i].length; j++) {
+        if (unlocked) {
+          html += '<div class="emoji-collection-item unlocked">' + tiers[i][j] + '</div>';
+        } else {
+          html += '<div class="emoji-collection-item locked"><i class="fa fa-lock"></i><span class="emoji-collection-threshold">' + threshold + '</span></div>';
+        }
+      }
+    }
+    return html;
+  },
+
+  renderEmojiCollection: function(){
+    var trainingscore = localStorage.getItem('trainingscore') ? parseInt(localStorage.getItem('trainingscore')) : 0;
+    var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
+
+    $('#collectionTrainingScore').text('(' + trainingscore + ' poäng)');
+    $('#collectionContestScore').text('(' + contestscore + ' poäng)');
+
+    $('#collectionTrainingGrid').html(game.buildEmojiCollectionHtml(game.emojiTierEmojisByMode.training, trainingscore));
+    $('#collectionContestGrid').html(game.buildEmojiCollectionHtml(game.emojiTierEmojisByMode.contest, contestscore));
   },
 
   emojiBurst: function(){
@@ -1235,6 +1313,7 @@ var game = {
     var totalscore = bonus + score;
     this.score += totalscore;
     this.updateScoreText(this.score);
+    this.updateEmojiProgress();
 
     this.emojiBurst();
 
@@ -1354,6 +1433,7 @@ $(document).ready(function() {
   // Inställningsikonerna: kugghjulet (vanliga inställningar) är synligt som vanligt,
   // utom när man kommer in via en elevlänk (?s=...) - då ska alla inställningar vara dolda,
   // eller i lärarläge (?t=y) - där täcker läraringången (mössan) redan samma inställningar.
+  // Emojisamlingen (leendet) är alltid synlig - det är bara en vy av ens egna poäng/emojis.
   var hasStudentLink = !!game.getUrlParam('s');
   var teacherMode = game.isTeacher();
   if (hasStudentLink) {
@@ -1361,10 +1441,11 @@ $(document).ready(function() {
     $('#teacherButton').hide();
   } else if (teacherMode) {
     $('#settingsButton').hide();
-    $('#teacherButton').css('right', 0);
+    $('#teacherButton').show();
   } else {
     $('#teacherButton').hide();
   }
+  game.layoutMenuIcons();
 
   // Applicera elevlänkens ?s=-inställningar (döljer knappar/svårighetsval, sätter svårighetsgrad)
   game.applyStudentViewFromUrl();
@@ -1455,16 +1536,6 @@ $(document).ready(function() {
     $('#checkAllowHard').prop('checked', false);
   });
 
-  var teacherResetScoreButton = $('#teacherResetScore');
-  teacherResetScoreButton.on('click', function(e){
-    e.preventDefault();
-    var confirmed = window.confirm('Är du säker? Dina poäng och emojisamling kommer att börja om från början.');
-    if (confirmed) {
-      localStorage.setItem('trainingscore', 0);
-      localStorage.setItem('contestscore', 0);
-      game.updateMenuScoreText(0, 0);
-    }
-  });
 
   // Skapa elevlänk är en separat sak från att spara - den bygger bara länken utifrån
   // det som senast sparades (och det som just nu står i räknesätt/svårighetskryssrutorna).
@@ -1528,14 +1599,30 @@ $(document).ready(function() {
     $('#checkHideVisualHelp').prop('checked', false);
   });
 
-  var resetScoreButton = $('#resetScore');
-  resetScoreButton.on('click', function(e){
+  var collectionButton = $('#collectionButton');
+  collectionButton.on('click', function(e){
+    e.preventDefault();
+    game.renderEmojiCollection();
+    game.mEl.hide();
+    $('#emojiCollection').show();
+  });
+
+  var emojiCollectionCloseButton = $('#emojiCollectionclose');
+  emojiCollectionCloseButton.on('click', function(e){
+    e.preventDefault();
+    $('#emojiCollection').hide();
+    game.mEl.show();
+  });
+
+  var collectionResetScoreButton = $('#collectionResetScore');
+  collectionResetScoreButton.on('click', function(e){
     e.preventDefault();
     var confirmed = window.confirm('Är du säker? Dina poäng och emojisamling kommer att börja om från början.');
     if (confirmed) {
       localStorage.setItem('trainingscore', 0);
       localStorage.setItem('contestscore', 0);
       game.updateMenuScoreText(0, 0);
+      game.renderEmojiCollection();
     }
   });
 
@@ -1641,7 +1728,8 @@ $(document).ready(function() {
     e.preventDefault();
     game.el.hide();
     game.mEl.show();
-    
+    $('#emojiProgress').hide();
+
     // Visa aktuell poäng
     var trainingscore = localStorage.getItem('trainingscore') ? parseInt(localStorage.getItem('trainingscore')) : 0;
     var contestscore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
