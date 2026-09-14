@@ -1,5 +1,5 @@
 body {
-  background-color: #757571;
+  background-color: #90908a;
   color: #111111;
   font-size: 1.2em;
   font-family: 'Concert One', sans-serif;
@@ -358,6 +358,16 @@ button.btn-transparent:hover {
   align-items: center;
   justify-content: center;
   font-size: 1.4em;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+}
+.emoji-collection-item.unlocked {
+  cursor: pointer;
+}
+.emoji-collection-item.unlocked.selected {
+  border-color: #ffce74;
+  background-color: #6c6c6a;
+  box-shadow: 0 0 8px rgba(255,206,116,0.8);
 }
 
 .emoji-collection-item.locked {
@@ -386,6 +396,21 @@ button.btn-transparent:hover {
   font-size: 1.3em;
   margin-bottom: 5px;
   text-align: center;
+}
+
+input[data-type="test-input"] {
+  transition: background-color 0.2s;
+}
+input[data-type="test-input"]:focus {
+  background-color: #a3fbfe;
+}
+
+.test-question-text {
+  transition: background-color 0.2s;
+  border-radius: 4px;
+}
+.test-question-text:has(+ input[data-type="test-input"]:focus) {
+  background-color: #a3fbfe;
 }
 
 .box {
@@ -847,4 +872,25 @@ input.correct-answer {
   font-size: 0.8em;
   background-color: rgba(0,0,0,0.5);
   color: #fff;
+}
+
+.mascot-display {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 600;
+  font-size: 3.2em;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(4px 8px 4px rgba(0,0,0,0.45));
+  animation: mascot-hover 2.6s ease-in-out infinite;
+}
+
+@keyframes mascot-hover {
+  0%, 100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
 }

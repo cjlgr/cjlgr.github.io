@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#757571">
 
   <link rel="apple-touch-icon" sizes="180x180" href="gfx/icon.png">
-  <link href="style/master.css?v=15" rel="stylesheet" type="text/css">
+  <link href="style/master.css?v=17" rel="stylesheet" type="text/css">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,14 +114,15 @@
 
     
     <div class="field-group" style="margin-top: 40px;">
-      <button id="clearSettings" class="btn-default btn-small-3d">Återställ</button>
-    </div>
-    <div class="field-group" style="margin-top: 20px;">
       <button id="saveSettings" class="btn-confirm btn-small-3d">Spara</button>
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
-      <p style="text-align: center;font-size: 0.8em;">Version 1.0.56</p>
+      <p style="text-align: center;font-size: 0.8em;">Version 1.0.67</p>
+    </div>
+
+    <div class="field-group" style="margin-top: 50px; margin-bottom: 60px;">
+      <button id="clearSettings" class="btn-danger btn-small-3d">Återställ</button>
     </div>
 
   </div>
@@ -215,6 +216,8 @@
       </div>
     </div>
 
+    <div class="text-center" style="margin-top: 10px; margin-bottom: 20px;"><input id="checkForceX" type="checkbox"><label for="checkForceX"><i class="fa fa-check-square"></i><i class="fa fa-square"></i> Tvinga Räkna med X <span style="font-size: 0.75em;">(eleven kan inte stänga av det)</span></label></div>
+
     <p class="text-center" style="color: #3c3c3a">Svårighetsgrader eleven får välja på</p>
     <div style="margin-bottom: 30px;">
       <div class="text-center"><input id="checkAllowInfant" type="checkbox" checked><label for="checkAllowInfant"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Lätt</label></div>
@@ -238,7 +241,7 @@
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
-      <p style="text-align: center;font-size: 0.8em;">Version 1.0.56</p>
+      <p style="text-align: center;font-size: 0.8em;">Version 1.0.67</p>
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
@@ -250,6 +253,7 @@
     <button class="btn-transparent" id="emojiCollectionclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
 
     <h3 class="text-center">Emojisamling</h3>
+    <p class="text-center" style="color: #3c3c3a">Tryck på en upplåst emoji för att välja den som maskot - tryck igen för att ta bort den</p>
 
     <h4 class="text-center" style="margin-top: 30px;">Träning <span id="collectionTrainingScore" style="color: #3c3c3a; font-size: 0.7em;"></span></h4>
     <div class="emoji-collection-grid" id="collectionTrainingGrid"></div>
@@ -308,7 +312,19 @@
     </div>
   </div>
 
-  <script src="script/script.js?v=34"></script>
+  <div id="emojiUnlockPopup" class="test-info-popup">
+    <div class="test-info-popup-box">
+      <h3 class="text-center">Du låste upp nya emojis!</h3>
+      <p class="text-center" id="emojiUnlockList" style="font-size: 1.8em;"></p>
+      <div class="text-center" style="margin-top: 30px;">
+        <button id="emojiUnlockClose" class="btn-big btn-3d btn-3d-yellow">Hurra!</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mascotDisplay" class="mascot-display" style="display:none;"></div>
+
+  <script src="script/script.js?v=44"></script>
 
 </body>
 </html>

@@ -217,7 +217,8 @@ var game = {
       training: true, contest: true, test: true,
       allowInfant: true, allowEasy: true, allowMedium: true, allowHard: true,
       allowAdd: true, allowSub: true, allowMult: true, allowX: true,
-      defaultAdd: true, defaultSub: false, defaultMult: false, defaultX: false
+      defaultAdd: true, defaultSub: false, defaultMult: false, defaultX: false,
+      forceX: false
     };
 
     $('#checkShowTraining').prop('checked', settings.training);
@@ -235,7 +236,12 @@ var game = {
     $('#checkDefaultSub').prop('checked', settings.defaultSub);
     $('#checkDefaultMult').prop('checked', settings.defaultMult);
     $('#checkDefaultX').prop('checked', settings.defaultX);
+    $('#checkForceX').prop('checked', settings.forceX);
     game.syncMethodToggles();
+    if (settings.forceX) {
+      $('#checkAllowX').prop('disabled', true);
+      $('#checkDefaultX').prop('disabled', true);
+    }
   },
 
   // Läser bara av kryssrutorna, utan att spara - används för att bygga elevlänken
@@ -256,7 +262,8 @@ var game = {
       defaultAdd: $('#checkDefaultAdd').is(':checked'),
       defaultSub: $('#checkDefaultSub').is(':checked'),
       defaultMult: $('#checkDefaultMult').is(':checked'),
-      defaultX: $('#checkDefaultX').is(':checked')
+      defaultX: $('#checkDefaultX').is(':checked'),
+      forceX: $('#checkForceX').is(':checked')
     };
   },
 
@@ -282,7 +289,8 @@ var game = {
       (settings.defaultSub ? 'y' : 'n') +
       (settings.defaultMult ? 'y' : 'n') +
       (settings.defaultX ? 'y' : 'n') +
-      (game.hideVisualHelp ? 'n' : 'y');
+      (game.hideVisualHelp ? 'n' : 'y') +
+      (settings.forceX ? 'y' : 'n');
 
     var hardLevel = game.levels.hard[2];
     var hardTest = game.testmode.hard;
@@ -307,7 +315,7 @@ var game = {
     }
     var parts = code.split('-');
     var flags = parts[0];
-    if (!flags || flags.length !== 16) {
+    if (!flags || flags.length !== 17) {
       return;
     }
 
@@ -363,11 +371,21 @@ var game = {
       $(methodCheckboxIds[allowedMethods[0]]).prop('checked', true).parent().hide();
     }
 
+    // Tvinga Räkna med X: oavsett vilka övriga räknesätt som är tillåtna ska X alltid vara på
+    // och inte gå att stänga av (positioner 7-10 avgör bara om X är valbart, inte om det är tvingat)
+    var forceX = flags.charAt(16) === 'y';
+    if (forceX) {
+      $('#checkX').prop('checked', true).parent().hide();
+    }
+
     // Räknesätt och/eller svårighetsgrad kan bli helt dolda ovan (om läraren bara tillåtit ett val) -
     // visa då en liten infotext så eleven ser vilket läge hen faktiskt spelar i.
     var lockedInfoParts = [];
     if (allowedMethods.length === 1) {
       lockedInfoParts.push('Räknesätt: <strong>' + game.methodLabels[allowedMethods[0]] + '</strong>');
+    }
+    if (forceX) {
+      lockedInfoParts.push('Räkna med X: <strong>Ja</strong>');
     }
     if (allowedDifficulties.length === 1) {
       lockedInfoParts.push('Svårighetsgrad: <strong>' + game.difficultyLabels[allowedDifficulties[0]] + '</strong>');
@@ -710,10 +728,20 @@ var game = {
     // round score to 2 decimals
     score = Math.round(score * 100) / 100;
 
+    // Test ger poäng till Tävling-samlingen - 10 poäng per rätt svar
+    var pointsEarned = correctAnswers * 10;
+    var previousContestScore = localStorage.getItem('contestscore') ? parseInt(localStorage.getItem('contestscore')) : 0;
+    var newContestScore = previousContestScore + pointsEarned;
+    localStorage.setItem('contestscore', newContestScore);
+    game.contest = true;
+    game.score = newContestScore;
+    var newlyUnlockedEmojis = game.getNewlyUnlockedEmojis(previousContestScore, newContestScore);
+
     var feedbacktxt = '<div class="box test-result-box"><h1>Bra jobbat!</h1>'+
     '<p>Total poäng:</p>'+
     '<div class="big-result"><span class="green-text">' + correctAnswers + '</span> / <span class="blue-text"><strong>'+totalAnswers+'</strong></span> </div>';
     feedbacktxt += '<p><strong>(<span class="xgreen-text">'+score+' %</span>)</strong></p>';
+    feedbacktxt += '<p>Du fick <strong><span class="green-text">'+pointsEarned+'</span></strong> poäng!</p>';
     // Alse stop the game time and add remaining time to feedback text
     var remainingTime = game.stopGameTime();
     var startTime = game.testmode[game.currentDifficulty].time;
@@ -735,6 +763,18 @@ var game = {
 
     // Scroll to bottom
     $('html, body').animate({scrollTop: $(document).height()}, 'slow');
+
+    // Stor emoji-burst av redan upplåsta emojis som en final när testet är slut
+    if (correctAnswers > 0) {
+      var ownedPool = game.getUnlockedEmojiPool(newContestScore);
+      game.emojiBurst(ownedPool, game.getRandomInt(25, 40));
+    }
+
+    if (newlyUnlockedEmojis.length > 0) {
+      $('#emojiUnlockList').text(newlyUnlockedEmojis.join(' '));
+      $('#emojiUnlockPopup').css('display', 'flex');
+      $('#emojiUnlockClose').focus();
+    }
   },
 
   getRandomInt: function (min, max) {
@@ -749,6 +789,19 @@ var game = {
       value = this.getRandomInt(Math.max(1, min), max);
     }
     return value;
+  },
+
+  // Om faktorernas intervall är för smalt (t.ex. samma tal varje gång i "Anpassad") går svaret
+  // att memorera direkt istället för att räknas ut - då ska inte poängen få vara hög bara för att
+  // faktorerna råkar vara stora tal. Dra ner belöningen kraftigt om det finns för få möjliga frågor.
+  getMultiplicationReward: function(answer, min, max, minb, maxb){
+    var rangeA = max - min + 1;
+    var rangeB = (minb !== undefined && maxb !== undefined) ? (maxb - minb + 1) : rangeA;
+    var comboCount = rangeA * rangeB;
+    if (comboCount < 5) {
+      return Math.min(answer, 3);
+    }
+    return answer;
   },
 
   setAlarm: function(alarm){
@@ -875,15 +928,17 @@ var game = {
     }
 
     
+    var xReward = (this.mode === 'multi') ? this.getMultiplicationReward(answer, min, max) : answer;
+
     if (orderOfX === 0) {
       this.currentAnswer = tal2;
-      this.currentCorrectReward = Math.ceil(answer*1.5);
+      this.currentCorrectReward = Math.ceil(xReward*1.5);
       q = {
         question: tal1 + ' ' + char + ' '+xCharacter+' = ' + answer + '<br>Vad blir '+xCharacter+'?'
       };
     } else {
       this.currentAnswer = tal1;
-      this.currentCorrectReward = Math.ceil(answer*1.5);
+      this.currentCorrectReward = Math.ceil(xReward*1.5);
       q = {
         question: xCharacter + ' ' + char + ' ' + tal2 + ' = ' + answer + '<br>Vad blir '+xCharacter+'?'
       };
@@ -958,7 +1013,7 @@ var game = {
 
 
     this.currentAnswer = answer;
-    this.currentCorrectReward = answer;
+    this.currentCorrectReward = (this.mode === 'multi') ? this.getMultiplicationReward(answer, min, max, minb, maxb) : answer;
 
 
     q = {
@@ -1169,11 +1224,17 @@ var game = {
     this.hEl.html(html);
   },
 
-  // Tumme upp och hjärta är alltid med. Var 300:e poäng (index * emojiUnlockStep)
-  // låses nästa par emojis upp - ju mer poäng, desto mer exotiska kan dyka upp i bursten.
-  // Träning och Tävling har varsin egen samling så de känns som skilda saker att samla på.
+  // Tumme upp och hjärta är alltid med. Nästa par emojis låses upp vid respektive poäng i
+  // emojiTierThresholds - trösklarna växer exponentiellt (tätt i början, långt mellan i toppen,
+  // ~40000 poäng för att låsa upp allt) så det inte tar en evighet att komma igång men känns
+  // som en riktig bedrift att nå toppen. Träning och Tävling har varsin egen samling.
   standardEmojis: ['👍', '❤️'],
-  emojiUnlockStep: 300,
+  emojiTierThresholds: [
+    0, 300, 350, 410, 470, 550, 640, 750, 870, 1020,
+    1190, 1380, 1610, 1880, 2190, 2550, 2970, 3460, 4040, 4700,
+    5480, 6390, 7440, 8670, 10100, 11770, 13720, 15980, 18620, 21700,
+    25280, 29460, 34330, 40000
+  ],
   emojiTierEmojisByMode: {
     training: [
       ['😄', '🎉'], ['⭐', '👏'], ['🥳', '🔥'], ['🍕', '🌮'], ['🦆', '🐙'],
@@ -1200,26 +1261,39 @@ var game = {
     return game.contest ? game.emojiTierEmojisByMode.contest : game.emojiTierEmojisByMode.training;
   },
 
+  // Högsta tier-index vars tröskel poängen redan når upp till
+  getTierIndexForScore: function(score){
+    var thresholds = game.emojiTierThresholds;
+    var index = 0;
+    for (var i = 0; i < thresholds.length; i++) {
+      if (score >= thresholds[i]) {
+        index = i;
+      } else {
+        break;
+      }
+    }
+    return index;
+  },
+
   getUnlockedEmojiPool: function(score){
     var tiers = game.getActiveEmojiTiers();
     var pool = game.standardEmojis.slice();
-    for (var i = 0; i < tiers.length; i++) {
-      if (score >= i * game.emojiUnlockStep) {
-        pool = pool.concat(tiers[i]);
-      }
+    var unlockedIndex = game.getTierIndexForScore(score);
+    for (var i = 0; i <= unlockedIndex; i++) {
+      pool = pool.concat(tiers[i]);
     }
     return pool;
   },
 
-  // Emojis vars tier ligger mellan föregående och nya poängen - dvs precis upplåsta av detta svar
+  // Emojis vars tröskel ligger mellan föregående och nya poängen - dvs precis upplåsta av detta svar
   getNewlyUnlockedEmojis: function(previousScore, newScore){
     var tiers = game.getActiveEmojiTiers();
+    var thresholds = game.emojiTierThresholds;
     var unlocked = [];
-    var maxTierIndex = tiers.length - 1;
-    var prevTierIndex = Math.min(Math.floor(previousScore / game.emojiUnlockStep), maxTierIndex);
-    var newTierIndex = Math.min(Math.floor(newScore / game.emojiUnlockStep), maxTierIndex);
-    for (var i = prevTierIndex + 1; i <= newTierIndex; i++) {
-      unlocked = unlocked.concat(tiers[i]);
+    for (var i = 0; i < tiers.length; i++) {
+      if (thresholds[i] > previousScore && thresholds[i] <= newScore) {
+        unlocked = unlocked.concat(tiers[i]);
+      }
     }
     return unlocked;
   },
@@ -1227,34 +1301,65 @@ var game = {
   // Visar hur många poäng som är kvar tills nästa emoji-tier låses upp, längst ner på skärmen
   updateEmojiProgress: function(){
     var tiers = game.getActiveEmojiTiers();
+    var thresholds = game.emojiTierThresholds;
     var maxTierIndex = tiers.length - 1;
-    var currentTierIndex = Math.min(Math.floor(game.score / game.emojiUnlockStep), maxTierIndex);
+    var currentTierIndex = game.getTierIndexForScore(game.score);
     if (currentTierIndex >= maxTierIndex) {
       $('#emojiProgress').html('Alla emojis upplåsta! 🎉');
       return;
     }
-    var remaining = (currentTierIndex + 1) * game.emojiUnlockStep - game.score;
+    var remaining = thresholds[currentTierIndex + 1] - game.score;
     $('#emojiProgress').html('Poäng kvar till nästa emoji: <strong>' + remaining + '</strong>');
   },
 
   // Bygger rutnätet av upplåsta (och kommande, låsta) emojis för en poängsumma
   buildEmojiCollectionHtml: function(tiers, score){
     var html = '';
+    var mascot = game.getMascot();
     for (var i = 0; i < game.standardEmojis.length; i++) {
-      html += '<div class="emoji-collection-item unlocked">' + game.standardEmojis[i] + '</div>';
+      html += game.buildMascotCell(game.standardEmojis[i], mascot);
     }
     for (var i = 0; i < tiers.length; i++) {
-      var threshold = i * game.emojiUnlockStep;
+      var threshold = game.emojiTierThresholds[i];
       var unlocked = score >= threshold;
       for (var j = 0; j < tiers[i].length; j++) {
         if (unlocked) {
-          html += '<div class="emoji-collection-item unlocked">' + tiers[i][j] + '</div>';
+          html += game.buildMascotCell(tiers[i][j], mascot);
         } else {
           html += '<div class="emoji-collection-item locked"><i class="fa fa-lock"></i><span class="emoji-collection-threshold">' + threshold + '</span></div>';
         }
       }
     }
     return html;
+  },
+
+  buildMascotCell: function(emoji, mascot){
+    var selectedClass = (emoji === mascot) ? ' selected' : '';
+    return '<div class="emoji-collection-item unlocked' + selectedClass + '" data-emoji="' + emoji + '">' + emoji + '</div>';
+  },
+
+  // Maskoten är en av elevens upplåsta emojis, sparad lokalt, som visas svävande i hörnet
+  getMascot: function(){
+    return localStorage.getItem('mascotEmoji') || null;
+  },
+
+  setMascot: function(emoji){
+    localStorage.setItem('mascotEmoji', emoji);
+    game.renderMascotDisplay();
+  },
+
+  clearMascot: function(){
+    localStorage.removeItem('mascotEmoji');
+    game.renderMascotDisplay();
+  },
+
+  renderMascotDisplay: function(){
+    var mascot = game.getMascot();
+    if (mascot) {
+      $('#mascotDisplay').text(mascot).show();
+    } else {
+      $('#mascotDisplay').hide();
+    }
   },
 
   renderEmojiCollection: function(){
@@ -1268,9 +1373,9 @@ var game = {
     $('#collectionContestGrid').html(game.buildEmojiCollectionHtml(game.emojiTierEmojisByMode.contest, contestscore));
   },
 
-  emojiBurst: function(){
-    var pool = game.getUnlockedEmojiPool(game.score);
-    var count = game.getRandomInt(7, 12);
+  emojiBurst: function(pool, count){
+    pool = pool || game.getUnlockedEmojiPool(game.score);
+    count = count || game.getRandomInt(7, 12);
     for (var i = 0; i < count; i++) {
       let emoji = pool[game.getRandomInt(0, pool.length - 1)];
       let el = document.createElement('span');
@@ -1302,7 +1407,8 @@ var game = {
   onCorrectAnswer: function(){
 
     var previousScore = this.score;
-    var score = Math.max(this.currentCorrectReward, 1);
+    // Max 500 poäng per svar, oavsett hur stort det uträknade svaret råkar bli
+    var score = Math.min(Math.max(this.currentCorrectReward, 1), 500);
     var bonus;
     if (this.contest) {
       bonus = Math.round(this.time / this.alarm * 10);
@@ -1334,16 +1440,19 @@ var game = {
       feedbacktxt += '<br><h4>Total poäng: <strong>'+totalscore+'</strong></h4><br>';
     }
     feedbacktxt += '</div>';
-    if (newlyUnlockedEmojis.length > 0) {
-      feedbacktxt += '<div class="box" style="margin-top:10px;"><strong>Du låste upp nya emojis!</strong><br>' +
-        '<span style="font-size:1.8em;">' + newlyUnlockedEmojis.join(' ') + '</span></div>';
-    }
     feedbacktxt += '<div class="box"><br><button id="newQuestion" class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button></div>';
 
     this.updateHelp('');
     this.updateFeedbackText(feedbacktxt);
 
     $('#newQuestion').focus();
+
+    if (newlyUnlockedEmojis.length > 0) {
+      $('#emojiUnlockList').text(newlyUnlockedEmojis.join(' '));
+      $('#emojiUnlockPopup').css('display', 'flex');
+      // Flytta fokus till popupens egen knapp, annars träffar Enter "Ny fråga" som ligger dold bakom
+      $('#emojiUnlockClose').focus();
+    }
 
   },
 
@@ -1429,6 +1538,7 @@ $(document).ready(function() {
   game.loadSettings();
   game.loadCustomDifficultySettings();
   game.loadHideVisualHelpSetting();
+  game.renderMascotDisplay();
 
   // Inställningsikonerna: kugghjulet (vanliga inställningar) är synligt som vanligt,
   // utom när man kommer in via en elevlänk (?s=...) - då ska alla inställningar vara dolda,
@@ -1482,6 +1592,17 @@ $(document).ready(function() {
     });
   });
 
+  // Tvinga X innebär att X är tillåtet och förvalt - håll de kryssrutorna ikryssade och låsta då
+  $('#checkForceX').on('change', function(){
+    var forced = $(this).is(':checked');
+    if (forced) {
+      $('#checkAllowX').prop('checked', true);
+      $('#checkDefaultX').prop('checked', true);
+    }
+    $('#checkAllowX').prop('disabled', forced);
+    $('#checkDefaultX').prop('disabled', forced);
+  });
+
   // Om läraren ändrar någon inställning efter att elevlänken skapats är den inte längre
   // uppdaterad - göm den så läraren tvingas trycka "Skapa elevlänk" igen
   $('#teacher').on('change input', 'input:not(#studentLinkText)', function(){
@@ -1528,6 +1649,9 @@ $(document).ready(function() {
     $('#checkDefaultSub').prop('checked', false);
     $('#checkDefaultMult').prop('checked', false);
     $('#checkDefaultX').prop('checked', false);
+    $('#checkForceX').prop('checked', false);
+    $('#checkAllowX').prop('disabled', false);
+    $('#checkDefaultX').prop('disabled', false);
     game.syncMethodToggles();
 
     $('#checkAllowInfant').prop('checked', false);
@@ -1614,6 +1738,17 @@ $(document).ready(function() {
     game.mEl.show();
   });
 
+  // Tryck på en upplåst emoji för att välja den som maskot - tryck igen för att ta bort den
+  $('#emojiCollection').on('click', '.emoji-collection-item.unlocked', function(){
+    var emoji = $(this).data('emoji');
+    if (game.getMascot() === emoji) {
+      game.clearMascot();
+    } else {
+      game.setMascot(emoji);
+    }
+    game.renderEmojiCollection();
+  });
+
   var collectionResetScoreButton = $('#collectionResetScore');
   collectionResetScoreButton.on('click', function(e){
     e.preventDefault();
@@ -1621,6 +1756,7 @@ $(document).ready(function() {
     if (confirmed) {
       localStorage.setItem('trainingscore', 0);
       localStorage.setItem('contestscore', 0);
+      game.clearMascot();
       game.updateMenuScoreText(0, 0);
       game.renderEmojiCollection();
     }
@@ -1680,6 +1816,12 @@ $(document).ready(function() {
   testInfoBackButton.on('click', function(e){
     e.preventDefault();
     $('#testInfoPopup').hide();
+  })
+
+  var emojiUnlockCloseButton = $('#emojiUnlockClose');
+  emojiUnlockCloseButton.on('click', function(e){
+    e.preventDefault();
+    $('#emojiUnlockPopup').hide();
   })
 
 
