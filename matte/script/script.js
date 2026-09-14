@@ -1093,6 +1093,11 @@ var game = {
     };
   },
 
+  // Singular/plural: t.ex. pluralize(1, 'bil', 'bilar') -> 'bil', pluralize(3, 'bil', 'bilar') -> 'bilar'
+  pluralize: function(count, singular, plural){
+    return count === 1 ? singular : plural;
+  },
+
   getHelpUnits: function(qty, innerQty){
 
     var type = ['car', 'eye', 'user-secret'][this.getRandomInt(0,2)],
@@ -1101,13 +1106,13 @@ var game = {
         unit = '';
 
     if (type === 'car') {
-      txt = '<p><em>' + qty + ' garage med ' + innerQty + ' bilar i varje.</em></p>';
+      txt = '<p><em>' + qty + ' ' + this.pluralize(qty, 'garage', 'garage') + ' med ' + innerQty + ' ' + this.pluralize(innerQty, 'bil', 'bilar') + ' i varje.</em></p>';
     }
     if (type === 'eye'){
-      txt = '<p><em>' + qty + ' ansikten med ' + innerQty + ' ögon på varje.</em></p>';
+      txt = '<p><em>' + qty + ' ' + this.pluralize(qty, 'ansikte', 'ansikten') + ' med ' + innerQty + ' ' + this.pluralize(innerQty, 'öga', 'ögon') + ' på varje.</em></p>';
     }
     if (type === 'user-secret'){
-      txt = '<p><em>' + qty + ' rum med ' + innerQty + ' detektiver i varje.</em></p>';
+      txt = '<p><em>' + qty + ' ' + this.pluralize(qty, 'rum', 'rum') + ' med ' + innerQty + ' ' + this.pluralize(innerQty, 'detektiv', 'detektiver') + ' i varje.</em></p>';
     }
 
     for (var q = 0; q < qty; q++) {
