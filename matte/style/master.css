@@ -41,6 +41,8 @@ a {
 #menu-score-wrapper .score-wrapper {
   position: static;
   padding: 0;
+  display: block;
+  text-align: center;
 }
 
 .training-score-label {
