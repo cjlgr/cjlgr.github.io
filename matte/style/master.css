@@ -916,7 +916,7 @@ input.correct-answer {
   z-index: 600;
   font-size: 3.2em;
   line-height: 1;
-  pointer-events: none;
+  cursor: pointer;
   filter: drop-shadow(4px 8px 4px rgba(0,0,0,0.45));
   animation: mascot-hover 2.6s ease-in-out infinite;
 }

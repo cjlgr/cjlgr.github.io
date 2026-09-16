@@ -1905,6 +1905,14 @@ $(document).ready(function() {
     $('#emojiCollection').show();
   });
 
+  var mascotDisplay = $('#mascotDisplay');
+  mascotDisplay.on('click', function(e){
+    e.preventDefault();
+    game.renderEmojiCollection();
+    game.mEl.hide();
+    $('#emojiCollection').show();
+  });
+
   var emojiCollectionCloseButton = $('#emojiCollectionclose');
   emojiCollectionCloseButton.on('click', function(e){
     e.preventDefault();
