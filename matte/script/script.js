@@ -1489,10 +1489,14 @@ var game = {
   emojiBurst: function(pool, count){
     pool = pool || game.getUnlockedEmojiPool(game.score);
     count = count || game.getRandomInt(7, 12);
-    // Använd visualViewport när den finns - den krymper när mobilens tangentbord är uppe,
-    // så emojisen hinner alltid hela vägen upp till den synliga övre delen av skärmen
-    // istället för att försvinna bakom tangentbordet innan de kommit tillräckligt högt.
-    var visibleHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    // "bottom" i CSS för en position:fixed-elemenet räknas mot layout-viewporten, inte den
+    // synliga (visual) viewporten - när mobilens tangentbord är uppe krymper bara den senare,
+    // så spawnpunkten hamnar dold bakom tangentbordet om vi utgår från "bottom". Ankra därför
+    // både start- och slutposition mot visualViewport (om den finns) så att emojisen alltid
+    // startar precis ovanför tangentbordet och hinner hela vägen upp till den synliga toppen.
+    var viewport = window.visualViewport;
+    var visibleHeight = viewport ? viewport.height : window.innerHeight;
+    var visibleTop = viewport ? viewport.offsetTop : 0;
     for (var i = 0; i < count; i++) {
       let emoji = pool[game.getRandomInt(0, pool.length - 1)];
       let el = document.createElement('span');
@@ -1510,7 +1514,7 @@ var game = {
       el.style.setProperty('--rot', rot);
       el.style.fontSize = (1.4 + Math.random() * 1.1).toFixed(2) + 'em';
       el.style.right = game.getRandomInt(5, 40) + 'px';
-      el.style.bottom = -game.getRandomInt(40, 100) + 'px';
+      el.style.top = (visibleTop + visibleHeight - game.getRandomInt(40, 100)) + 'px';
       el.style.animationDuration = duration;
       el.style.animationDelay = delay;
 

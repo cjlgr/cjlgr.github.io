@@ -861,26 +861,37 @@ input.correct-answer {
   z-index: 9999;
   pointer-events: none;
   will-change: transform, opacity;
-  animation-name: emoji-burst-float;
-  animation-timing-function: ease-out;
-  animation-fill-mode: forwards;
+  /* Rörelsen och opaciteten körs som två separata animationer så att rörelsen kan följa en enda,
+     obruten kurva (annars börjar "ease-out" om vid varje mellansteg och det ser ut som att
+     emojisen ryckigt saktar ner och accelererar igen). */
+  animation-name: emoji-burst-move, emoji-burst-fade;
+  animation-timing-function: ease-out, linear;
+  /* "both" (inte bara "forwards") så att elementet visas i sitt 0%-läge (litet, osynligt)
+     redan under animation-delay - annars syns det en stund i full storlek/opacitet innan
+     animationen börjar, och verkar sedan "krympa" med ett hopp när den startar. */
+  animation-fill-mode: both;
 }
 
-@keyframes emoji-burst-float {
+@keyframes emoji-burst-move {
   0% {
     transform: translate(0, 0) scale(0.4) rotate(0deg);
+  }
+  100% {
+    transform: translate(var(--dx, -60px), var(--dy, -260px)) scale(1) rotate(var(--rot, 20deg));
+  }
+}
+
+@keyframes emoji-burst-fade {
+  0% {
     opacity: 0;
   }
   10% {
     opacity: 1;
-    transform: translate(calc(var(--dx, -60px) * 0.15), calc(var(--dy, -260px) * 0.15)) scale(1.1) rotate(calc(var(--rot, 20deg) * 0.15));
   }
   75% {
     opacity: 1;
-    transform: translate(calc(var(--dx, -60px) * 0.85), calc(var(--dy, -260px) * 0.85)) scale(1) rotate(calc(var(--rot, 20deg) * 0.85));
   }
   100% {
-    transform: translate(var(--dx, -60px), var(--dy, -260px)) scale(1) rotate(var(--rot, 20deg));
     opacity: 0;
   }
 }
