@@ -1653,7 +1653,7 @@ var game = {
 
     var newlyUnlockedEmojis = game.getNewlyUnlockedEmojis(previousScore, this.score);
 
-    var feedbacktxt = '<div class="box green-box"><h3>Rätt!</h3> Du fick <strong>'+score+'</strong> poäng.<br>';
+    var feedbacktxt = '<div class="box green-box"><h3>Rätt!</h3> Du fick <strong>'+baseScore+'</strong> poäng.<br>';
     if (streakBonusPercent > 0) {
       feedbacktxt += '<span class="green-text">Streak-bonus '+streakBonus+' poäng (+'+streakBonusPercent+'%)</span><br>';
     }

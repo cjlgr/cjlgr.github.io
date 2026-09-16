@@ -826,7 +826,10 @@ input.correct-answer {
   right: 0;
   left: 0;
   bottom: 0;
-  z-index: 1000;
+  /* Högre än .emoji-burst-particle (9999) - annars kan t.ex. streak-fyrverkeriets stjärnor
+     synas ovanpå den mörklagda rutan, och det ser ut som att de kommer från ingenstans
+     eftersom det de faktiskt sköts ut ifrån (streak-baren) är dolt bakom overlayen. */
+  z-index: 10000;
   background-color: rgba(0,0,0,0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
