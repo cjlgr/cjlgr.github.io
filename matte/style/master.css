@@ -460,7 +460,8 @@ input[data-type="test-input"]:focus {
   border-radius: 4px;
 }
 .test-question-text:has(+ input[data-type="test-input"]:focus) {
-  background-color: #a3fbfe;
+  background-color: #b9c0c1;
+  border-radius: 1000px;
 }
 
 .box {
