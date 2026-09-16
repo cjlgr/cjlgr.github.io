@@ -1304,7 +1304,10 @@ var game = {
     var html = '';
     if (game.showTraining) {
       var trainingTrophyColor = trainingscore > 0 ? 'orange' : '#6c6c6a';
-      html += '<span style="padding-right: 20px;"><strong class="training-label">Träning:</strong> <span class="training-score-label">'+trainingscore+'&nbsp;<i class="fa fa-trophy" style="color: '+trainingTrophyColor+';" aria-hidden="true"></i></span></span>';
+      html += '<span style="white-space: nowrap"><strong class="training-label">Träning:</strong> <span class="training-score-label">'+trainingscore+'&nbsp;<i class="fa fa-trophy" style="color: '+trainingTrophyColor+';" aria-hidden="true"></i></span></span>';
+    }
+    if (game.showTraining && game.showContest) {
+      html += '<br>';
     }
     if (game.showContest) {
       var contestTrophyColor = contestscore > 0 ? 'orange' : '#6c6c6a';
@@ -1486,6 +1489,10 @@ var game = {
   emojiBurst: function(pool, count){
     pool = pool || game.getUnlockedEmojiPool(game.score);
     count = count || game.getRandomInt(7, 12);
+    // Använd visualViewport när den finns - den krymper när mobilens tangentbord är uppe,
+    // så emojisen hinner alltid hela vägen upp till den synliga övre delen av skärmen
+    // istället för att försvinna bakom tangentbordet innan de kommit tillräckligt högt.
+    var visibleHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
     for (var i = 0; i < count; i++) {
       let emoji = pool[game.getRandomInt(0, pool.length - 1)];
       let el = document.createElement('span');
@@ -1493,9 +1500,9 @@ var game = {
       el.textContent = emoji;
 
       let dx = game.getRandomInt(-140, 40) + 'px';
-      let dy = -game.getRandomInt(240, 420) + 'px';
+      let dy = -game.getRandomInt(Math.round(visibleHeight * 0.75), Math.round(visibleHeight * 0.95)) + 'px';
       let rot = game.getRandomInt(-45, 45) + 'deg';
-      let duration = (2.4 + Math.random() * 1.2).toFixed(2) + 's';
+      let duration = (3.4 + Math.random() * 1.8).toFixed(2) + 's';
       let delay = (Math.random() * 0.3).toFixed(2) + 's';
 
       el.style.setProperty('--dx', dx);
