@@ -1676,6 +1676,34 @@ var game = {
 }
 
 
+// Tvingar fram en helt färsk sida: en riktig nätverkshämtning (cache: 'reload') av exakt den
+// bokmärkta URL:en (utan query-sträng), så att webbläsarens cache för just den URL:en verkligen
+// uppdateras innan vi navigerar dit - annars kan hemskärmsikonen fortsätta visa en gammal,
+// cachad kopia nästa gång appen startas, även om den här sidan i minnet har senaste versionen.
+function forceFreshAppReload(){
+  var url = window.location.pathname;
+  if (window.fetch) {
+    fetch(url, { cache: 'reload' }).then(function(){
+      window.location.href = url;
+    }).catch(function(){
+      window.location.href = url;
+    });
+  } else {
+    window.location.href = url;
+  }
+}
+
+// Att "stänga" en hemskärms-app på iPhone dödar den oftast inte - iOS pausar bara sidan i minnet,
+// och att öppna appen igen återupptar EXAKT samma sida/JS-tillstånd utan någon som helst
+// nätverkshämtning. Därför hjälper ingen cache-strategi mot det - sidan laddas aldrig om alls.
+// "pageshow" med event.persisted === true talar om att sidan just återupptagits på det sättet
+// (istället för att ha laddats fräscht), så tvinga då fram en riktig, färsk omladdning.
+window.addEventListener('pageshow', function(event){
+  if (event.persisted) {
+    forceFreshAppReload();
+  }
+});
+
 $(document).ready(function() {
   // Visa splash-skärmen med loggan i 3 sekunder innan den tonas bort
   setTimeout(function(){
@@ -1912,25 +1940,9 @@ $(document).ready(function() {
     game.saveHideVisualHelpSetting();
   });
 
-  // Hemskärms-appar på iPhone ("Lägg till på hemskärmen") startar alltid om från exakt samma
-  // (query-lösa) URL som lades till från början, och den kan ha en gammal, cachad sida sparad
-  // för just den URL:en. Att bara navigera till en NY url (med en query-sträng) uppdaterar
-  // aldrig den cachade kopian av den ursprungliga bokmärkta URL:en - då syns ändå den gamla
-  // versionen igen nästa gång appen startas om från hemskärmsikonen. Tvinga därför fram en
-  // riktig nätverkshämtning (cache: 'reload') av exakt den URL:en innan vi laddar om den, så
-  // att webbläsarens cache för den bokmärkta URL:en faktiskt uppdateras.
   $('#reloadAppButton, #t-reloadAppButton').on('click', function(e){
     e.preventDefault();
-    var url = window.location.pathname;
-    if (window.fetch) {
-      fetch(url, { cache: 'reload' }).then(function(){
-        window.location.href = url;
-      }).catch(function(){
-        window.location.href = url;
-      });
-    } else {
-      window.location.href = url;
-    }
+    forceFreshAppReload();
   });
 
   // Maskoten (till skillnad från den lilla leende-ikonen, som bara finns i menyn) syns på alla
