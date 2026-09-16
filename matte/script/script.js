@@ -928,6 +928,7 @@ var game = {
 
   createNewQuestion: function(){
     var q;
+    this.clearEmojiBurstParticles();
     this.wrongAttempts = 0;
     if (this.xMode) {
       q = this.createXQuestion();
@@ -1536,6 +1537,73 @@ var game = {
     }
   },
 
+  // Låter kvarvarande emoji-partiklar från en burst tona bort snabbt istället för att spela
+  // klart sin fulla, flera sekunder långa animation - t.ex. när man går vidare till "Ny fråga"
+  // innan förra bursten hunnit försvinna av sig själv.
+  clearEmojiBurstParticles: function(){
+    $('.emoji-burst-particle').each(function(){
+      var el = this;
+      var computed = window.getComputedStyle(el);
+      // Frys kvar exakt där/hur den ser ut just nu (position, rotation, opacitet) innan
+      // animationen stängs av - annars hoppar den till sitt ursprungsläge ett kort ögonblick.
+      var currentOpacity = computed.opacity;
+      var currentTransform = computed.transform;
+      el.style.animation = 'none';
+      el.style.transform = currentTransform;
+      el.style.opacity = currentOpacity;
+      el.style.transition = 'opacity 0.15s linear';
+      void el.offsetWidth; // tvinga fram en reflow så transitionen faktiskt appliceras
+      el.style.opacity = '0';
+      setTimeout(function(){
+        el.remove();
+      }, 180);
+    });
+  },
+
+  // Litet stjärn-fyrverkeri som skjuter ut åt alla håll direkt från streak-baren - körs vid
+  // var tionde fråga i rad (10, 20, 30, ...). Återanvänder samma partikel-klass/animationer
+  // som den vanliga emoji-bursten, men med en radiell riktning från barens mittpunkt istället
+  // för en riktning uppåt från skärmens botten, och en mycket kortare, snabbare bana.
+  streakFirework: function(){
+    var bar = document.getElementById('streakDisplay');
+    if (!bar) {
+      return;
+    }
+    var rect = bar.getBoundingClientRect();
+    var originX = rect.left + rect.width / 2;
+    var originY = rect.top + rect.height / 2;
+    var stars = ['⭐', '🌟'];
+    var count = game.getRandomInt(14, 20);
+    for (var i = 0; i < count; i++) {
+      let emoji = stars[game.getRandomInt(0, stars.length - 1)];
+      let el = document.createElement('span');
+      el.className = 'emoji-burst-particle';
+      el.textContent = emoji;
+
+      let angle = Math.random() * Math.PI * 2;
+      let distance = game.getRandomInt(50, 150);
+      let dx = Math.round(Math.cos(angle) * distance) + 'px';
+      let dy = Math.round(Math.sin(angle) * distance) + 'px';
+      let rot = game.getRandomInt(-90, 90) + 'deg';
+      let duration = (0.7 + Math.random() * 0.5).toFixed(2) + 's';
+      let delay = (Math.random() * 0.15).toFixed(2) + 's';
+
+      el.style.setProperty('--dx', dx);
+      el.style.setProperty('--dy', dy);
+      el.style.setProperty('--rot', rot);
+      el.style.fontSize = (1.1 + Math.random() * 0.8).toFixed(2) + 'em';
+      el.style.left = originX + 'px';
+      el.style.top = originY + 'px';
+      el.style.animationDuration = duration;
+      el.style.animationDelay = delay;
+
+      document.body.appendChild(el);
+      setTimeout(function(){
+        el.remove();
+      }, (parseFloat(duration) + parseFloat(delay)) * 1000 + 150);
+    }
+  },
+
   onCorrectAnswer: function(){
 
     var previousScore = this.score;
@@ -1567,9 +1635,9 @@ var game = {
     this.updateScoreText(this.score);
     this.updateEmojiProgress();
 
-    // Extra stjärnregn var 10:e fråga i rad, utöver den vanliga emoji-bursten
+    // Stjärn-fyrverkeri från streak-baren var 10:e fråga i rad, utöver den vanliga emoji-bursten
     if (this.streak % 10 === 0) {
-      this.emojiBurst(['⭐', '🌟'], game.getRandomInt(20, 30));
+      this.streakFirework();
     }
 
     this.emojiBurst();
@@ -1587,7 +1655,7 @@ var game = {
 
     var feedbacktxt = '<div class="box green-box"><h3>Rätt!</h3> Du fick <strong>'+score+'</strong> poäng.<br>';
     if (streakBonusPercent > 0) {
-      feedbacktxt += '<span class="green-text">(streak-bonus +'+streakBonusPercent+'%)</span><br>';
+      feedbacktxt += '<span class="green-text">Streak-bonus '+streakBonus+' poäng (+'+streakBonusPercent+'%)</span><br>';
     }
     if (this.contest) {
       feedbacktxt += 'Du fick <strong>'+bonus+'</strong> i tidsbonus.';
