@@ -1912,13 +1912,25 @@ $(document).ready(function() {
     game.saveHideVisualHelpSetting();
   });
 
-  // Hemskärms-appar på iPhone ("Lägg till på hemskärmen") kan hänga kvar på en gammal cachad
-  // version av sidan väldigt länge. En vanlig omladdning (t.ex. dra nedåt) fungerar inte i det
-  // fristående appläget, så ge ett sätt att tvinga fram en riktig, färsk hämtning: byt query-
-  // sträng på sidans egen URL (webbläsaren cachar annars ofta på exakt URL, inte bara sökvägen).
+  // Hemskärms-appar på iPhone ("Lägg till på hemskärmen") startar alltid om från exakt samma
+  // (query-lösa) URL som lades till från början, och den kan ha en gammal, cachad sida sparad
+  // för just den URL:en. Att bara navigera till en NY url (med en query-sträng) uppdaterar
+  // aldrig den cachade kopian av den ursprungliga bokmärkta URL:en - då syns ändå den gamla
+  // versionen igen nästa gång appen startas om från hemskärmsikonen. Tvinga därför fram en
+  // riktig nätverkshämtning (cache: 'reload') av exakt den URL:en innan vi laddar om den, så
+  // att webbläsarens cache för den bokmärkta URL:en faktiskt uppdateras.
   $('#reloadAppButton, #t-reloadAppButton').on('click', function(e){
     e.preventDefault();
-    window.location.href = window.location.pathname + '?reload=' + Date.now();
+    var url = window.location.pathname;
+    if (window.fetch) {
+      fetch(url, { cache: 'reload' }).then(function(){
+        window.location.href = url;
+      }).catch(function(){
+        window.location.href = url;
+      });
+    } else {
+      window.location.href = url;
+    }
   });
 
   // Maskoten (till skillnad från den lilla leende-ikonen, som bara finns i menyn) syns på alla
