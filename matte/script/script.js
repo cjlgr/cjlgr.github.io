@@ -17,6 +17,9 @@ var game = {
   showTraining: true,
   showContest: true,
   hideVisualHelp: false,
+  // Sätts en gång vid sidladdning (innan mobilens tangentbord någonsin varit uppe) - används
+  // som fast "golv" för var emoji-bursten ska starta, se emojiBurst.
+  fullScreenHeight: window.innerHeight,
   score: 0,
   alarm: 0,
   time: 0,
@@ -1489,13 +1492,13 @@ var game = {
   emojiBurst: function(pool, count){
     pool = pool || game.getUnlockedEmojiPool(game.score);
     count = count || game.getRandomInt(7, 12);
-    // "bottom" i CSS för en position:fixed-elemenet räknas mot layout-viewporten, inte den
-    // synliga (visual) viewporten - när mobilens tangentbord är uppe krymper bara den senare,
-    // så spawnpunkten hamnar dold bakom tangentbordet om vi utgår från "bottom". Ankra därför
-    // både start- och slutposition mot visualViewport (om den finns) så att emojisen alltid
-    // startar precis ovanför tangentbordet och hinner hela vägen upp till den synliga toppen.
+    // Starten ska alltid ligga vid skärmens FYSISKA botten (game.fullScreenHeight, satt en gång
+    // vid sidladdning) - annars flyttar sig spawnpunkten med visualViewport när tangentbordet
+    // fälls upp/ner, och bursten ser ut att plötsligt ha startat mitt på skärmen. Målet (hur
+    // långt upp den ska hinna) räknas däremot mot den just nu SYNLIGA ytan (visualViewport),
+    // så att den ändå alltid hinner upp ovanför ett ev. uppfällt tangentbord.
     var viewport = window.visualViewport;
-    var visibleHeight = viewport ? viewport.height : window.innerHeight;
+    var visibleHeight = viewport ? viewport.height : game.fullScreenHeight;
     var visibleTop = viewport ? viewport.offsetTop : 0;
     for (var i = 0; i < count; i++) {
       let emoji = pool[game.getRandomInt(0, pool.length - 1)];
@@ -1503,8 +1506,11 @@ var game = {
       el.className = 'emoji-burst-particle';
       el.textContent = emoji;
 
+      let spawnTop = game.fullScreenHeight - game.getRandomInt(40, 100);
+      let targetTop = visibleTop + game.getRandomInt(Math.round(visibleHeight * 0.05), Math.round(visibleHeight * 0.25));
+
       let dx = game.getRandomInt(-140, 40) + 'px';
-      let dy = -game.getRandomInt(Math.round(visibleHeight * 0.75), Math.round(visibleHeight * 0.95)) + 'px';
+      let dy = (targetTop - spawnTop) + 'px';
       let rot = game.getRandomInt(-45, 45) + 'deg';
       let duration = (3.4 + Math.random() * 1.8).toFixed(2) + 's';
       let delay = (Math.random() * 0.3).toFixed(2) + 's';
@@ -1514,7 +1520,7 @@ var game = {
       el.style.setProperty('--rot', rot);
       el.style.fontSize = (1.4 + Math.random() * 1.1).toFixed(2) + 'em';
       el.style.right = game.getRandomInt(5, 40) + 'px';
-      el.style.top = (visibleTop + visibleHeight - game.getRandomInt(40, 100)) + 'px';
+      el.style.top = spawnTop + 'px';
       el.style.animationDuration = duration;
       el.style.animationDelay = delay;
 
@@ -1683,6 +1689,15 @@ $(document).ready(function() {
   game.loadCustomDifficultySettings();
   game.loadHideVisualHelpSetting();
   game.renderMascotDisplay();
+
+  // window.resize (till skillnad från visualViewport.resize) triggas av en riktig storleksändring
+  // - t.ex. att skärmen roteras eller att man ändrar bredd på fönstret på desktop - men INTE av
+  // att mobilens tangentbord fälls upp/ner. Uppdatera därför fullScreenHeight bara här, så att
+  // emoji-burstens startpunkt (se emojiBurst) följer med vid en riktig storleksändring men
+  // förblir opåverkad av tangentbordet.
+  $(window).on('resize', function(){
+    game.fullScreenHeight = window.innerHeight;
+  });
 
   // Inställningsikonerna: kugghjulet (vanliga inställningar) är synligt som vanligt,
   // utom när man kommer in via en elevlänk (?s=...) - då ska alla inställningar vara dolda,
