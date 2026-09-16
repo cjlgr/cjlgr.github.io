@@ -330,6 +330,32 @@ button.btn-transparent:hover {
   clear: both;
 }
 
+.streak-display {
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 12px;
+  padding: 5px 12px;
+  border-radius: 1000px;
+  background-color: #eeca2e;
+  color: #593c00;
+  font-size: 1em;
+  font-weight: bold;
+  animation: streak-pop 0.3s ease-out;
+}
+
+@keyframes streak-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 #game {
   display: none;
 }

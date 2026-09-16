@@ -14,6 +14,7 @@ var game = {
   currentAnswer: null,
   currentCorrectReward: null,
   wrongAttempts: 0,
+  streak: 0,
   xMode: false,
   showTraining: true,
   showContest: true,
@@ -687,6 +688,8 @@ var game = {
 
     }
 
+    this.streak = 0;
+    this.updateStreakDisplay();
     this.updateScoreText(this.score);
     this.updateEmojiProgress();
     $('#emojiProgress').show();
@@ -1536,8 +1539,22 @@ var game = {
   onCorrectAnswer: function(){
 
     var previousScore = this.score;
+
+    this.streak++;
+    this.updateStreakDisplay();
+
     // Max 500 poäng per svar, oavsett hur stort det uträknade svaret råkar bli
-    var score = Math.min(Math.max(this.currentCorrectReward, 1), 500);
+    var baseScore = Math.min(Math.max(this.currentCorrectReward, 1), 500);
+    // Streak-bonus: ingen bonus alls under en streak på 10. Därefter trappas den upp i steg
+    // om tio: 10-19 ger x1.1, 20-29 ger x1.2, osv, upp till max x2 vid en streak på 100+.
+    var streakTier = Math.min(Math.floor(this.streak / 10), 10);
+    var streakMultiplier = 1 + streakTier * 0.1;
+    // Avrunda bonusen uppåt (och minst +1) - annars kan t.ex. 1% av en liten baspoäng
+    // försvinna i avrundningen och man kvalar in för en streak-bonus utan att märka av den.
+    var streakBonus = (streakTier > 0) ? Math.max(Math.ceil(baseScore * (streakMultiplier - 1)), 1) : 0;
+    var score = baseScore + streakBonus;
+    var streakBonusPercent = Math.round((streakMultiplier - 1) * 100);
+
     var bonus;
     if (this.contest) {
       bonus = Math.round(this.time / this.alarm * 10);
@@ -1549,6 +1566,11 @@ var game = {
     this.score += totalscore;
     this.updateScoreText(this.score);
     this.updateEmojiProgress();
+
+    // Extra stjärnregn var 10:e fråga i rad, utöver den vanliga emoji-bursten
+    if (this.streak % 10 === 0) {
+      this.emojiBurst(['⭐', '🌟'], game.getRandomInt(20, 30));
+    }
 
     this.emojiBurst();
 
@@ -1564,6 +1586,9 @@ var game = {
     var newlyUnlockedEmojis = game.getNewlyUnlockedEmojis(previousScore, this.score);
 
     var feedbacktxt = '<div class="box green-box"><h3>Rätt!</h3> Du fick <strong>'+score+'</strong> poäng.<br>';
+    if (streakBonusPercent > 0) {
+      feedbacktxt += '<span class="green-text">(streak-bonus +'+streakBonusPercent+'%)</span><br>';
+    }
     if (this.contest) {
       feedbacktxt += 'Du fick <strong>'+bonus+'</strong> i tidsbonus.';
       feedbacktxt += '<br><h4>Total poäng: <strong>'+totalscore+'</strong></h4><br>';
@@ -1585,11 +1610,26 @@ var game = {
 
   },
 
+  // Visar hur många rätt i rad man har (från och med 2) ovanför frågan. Nollställs vid
+  // fel svar, "Visa svaret" eller när ett nytt spelpass startas.
+  updateStreakDisplay: function(){
+    var el = $('#streakDisplay');
+    if (this.streak >= 2) {
+      el.text('⭐ Streak ' + this.streak).show();
+    } else {
+      el.hide();
+    }
+  },
+
   onWrongAnswer: function(txt){
     if (txt) {
+      this.streak = 0;
+      this.updateStreakDisplay();
       this.updateFeedbackText('<div class="box red-box">' + txt + '</div>');
       return;
     }
+    this.streak = 0;
+    this.updateStreakDisplay();
     var wrongtxt = '<h3>Fel svar. Försök igen!</h3>';
     // Efter andra felaktiga försöket på samma fråga - ge möjlighet att se svaret istället
     // för att tvingas fortsätta gissa på en fråga man kört fast på.
@@ -2094,6 +2134,9 @@ $(document).ready(function() {
   emojiUnlockCloseButton.on('click', function(e){
     e.preventDefault();
     $('#emojiUnlockPopup').hide();
+    // Flytta fokus till "Ny fråga" (som redan låg bakom popupen) så man kan fortsätta
+    // trycka Enter rakt igenom utan att behöva klicka någonstans.
+    $('#newQuestion').focus();
   })
 
 
