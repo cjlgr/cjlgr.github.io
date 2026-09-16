@@ -1912,27 +1912,55 @@ $(document).ready(function() {
     game.saveHideVisualHelpSetting();
   });
 
+  // Hemskärms-appar på iPhone ("Lägg till på hemskärmen") kan hänga kvar på en gammal cachad
+  // version av sidan väldigt länge. En vanlig omladdning (t.ex. dra nedåt) fungerar inte i det
+  // fristående appläget, så ge ett sätt att tvinga fram en riktig, färsk hämtning: byt query-
+  // sträng på sidans egen URL (webbläsaren cachar annars ofta på exakt URL, inte bara sökvägen).
+  $('#reloadAppButton, #t-reloadAppButton').on('click', function(e){
+    e.preventDefault();
+    window.location.href = window.location.pathname + '?reload=' + Date.now();
+  });
+
+  // Maskoten (till skillnad från den lilla leende-ikonen, som bara finns i menyn) syns på alla
+  // skärmar - t.ex. mitt i ett pågående spel. Kom då ihåg vilken skärm som faktiskt var synlig
+  // innan samlingen öppnades, så att "Tillbaka" återställer RÄTT skärm istället för att alltid
+  // gå till menyn (vilket annars lämnade den gamla skärmen kvar dold "under" menyn).
+  game.viewBeforeCollection = null;
+
+  var openEmojiCollection = function(){
+    var views = [game.mEl, game.el, game.tEl, game.setEl, game.teacherEl];
+    game.viewBeforeCollection = null;
+    for (var i = 0; i < views.length; i++) {
+      if (views[i].is(':visible')) {
+        game.viewBeforeCollection = views[i];
+        break;
+      }
+    }
+    game.renderEmojiCollection();
+    if (game.viewBeforeCollection) {
+      game.viewBeforeCollection.hide();
+    }
+    $('#emojiCollection').show();
+  };
+
   var collectionButton = $('#collectionButton');
   collectionButton.on('click', function(e){
     e.preventDefault();
-    game.renderEmojiCollection();
-    game.mEl.hide();
-    $('#emojiCollection').show();
+    openEmojiCollection();
   });
 
   var mascotDisplay = $('#mascotDisplay');
   mascotDisplay.on('click', function(e){
     e.preventDefault();
-    game.renderEmojiCollection();
-    game.mEl.hide();
-    $('#emojiCollection').show();
+    openEmojiCollection();
   });
 
   var emojiCollectionCloseButton = $('#emojiCollectionclose');
   emojiCollectionCloseButton.on('click', function(e){
     e.preventDefault();
     $('#emojiCollection').hide();
-    game.mEl.show();
+    (game.viewBeforeCollection || game.mEl).show();
+    game.viewBeforeCollection = null;
   });
 
   // Tryck på en upplåst emoji för att välja den som maskot - tryck igen för att ta bort den

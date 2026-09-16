@@ -477,7 +477,7 @@ input[data-type="test-input"]:focus {
 }
 
 .red-box {
-  color: #ff5e5e;
+  color: #a74040;
 }
 
 input[type=checkbox] {
@@ -903,7 +903,7 @@ input.correct-answer {
   bottom: 0;
   z-index: 500;
   text-align: center;
-  padding: 8px;
+  padding: 18px;
   font-size: 0.8em;
   background-color: rgba(0,0,0,0.5);
   color: #fff;
