@@ -13,6 +13,7 @@ var game = {
   tEl: $('#test'),
   currentAnswer: null,
   currentCorrectReward: null,
+  wrongAttempts: 0,
   xMode: false,
   showTraining: true,
   showContest: true,
@@ -924,6 +925,7 @@ var game = {
 
   createNewQuestion: function(){
     var q;
+    this.wrongAttempts = 0;
     if (this.xMode) {
       q = this.createXQuestion();
     } else {
@@ -1584,8 +1586,24 @@ var game = {
   },
 
   onWrongAnswer: function(txt){
-    wrongtxt = txt ? txt : '<h3>Fel svar. Försök igen!</h3>';
+    if (txt) {
+      this.updateFeedbackText('<div class="box red-box">' + txt + '</div>');
+      return;
+    }
+    var wrongtxt = '<h3>Fel svar. Försök igen!</h3>';
+    // Efter andra felaktiga försöket på samma fråga - ge möjlighet att se svaret istället
+    // för att tvingas fortsätta gissa på en fråga man kört fast på.
+    if (this.wrongAttempts >= 2) {
+      wrongtxt += '<button class="btn-small-3d" onclick="game.revealAnswer()">Visa svaret</button>';
+    }
     this.updateFeedbackText('<div class="box red-box">' + wrongtxt + '</div>');
+  },
+
+  // Visar rätt svar på den aktuella frågan - man kan inte längre svara på den själv,
+  // utan måste gå vidare med en ny fråga.
+  revealAnswer: function(){
+    $('#answerButton').attr('disabled', true);
+    this.updateFeedbackText('<div class="box red-box"><h3>Det rätta svaret är '+this.currentAnswer+'</h3><button class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button></div>');
   },
 
   countDown: function(seconds, callbackFn){
@@ -2091,6 +2109,7 @@ $(document).ready(function() {
         game.onCorrectAnswer();
 
       } else {
+        game.wrongAttempts++;
         game.onWrongAnswer();
       }
     }
