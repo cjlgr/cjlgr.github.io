@@ -21,6 +21,8 @@
 </head>
 <body>
 
+  <div id="appContainer">
+
   <div id="splashScreen">
     <img src="gfx/logo-big.png" alt="Räknix">
   </div>
@@ -329,14 +331,14 @@
   <div id="game">
     <button class="btn-transparent" id="back"><i class="fa fa-arrow-left"></i> Tillbaka</button><br>
     <div id="streakDisplay" class="streak-display" style="display:none;"></div>
+    <div id="counter" class="counter-wrapper">
+      <div id="counterbar"></div>
+    </div>
     <div id="questionText"></div>
     <div id="answerWrapper">
       <input type="number" id="answerField">
       <div class="confirm-button-wrapper">
         <button class="btn-confirm btn-small-3d" id="answerButton">Ok</button>
-      </div>
-      <div id="counter" class="counter-wrapper">
-        <div id="counterbar"></div>
       </div>
       <div id="help"></div>
       <p id="feedback"></p>
@@ -382,6 +384,8 @@
   </div>
 
   <div id="mascotDisplay" class="mascot-display" style="display:none;"></div>
+
+  </div>
 
   <script src="script/script.js?v=84"></script>
 

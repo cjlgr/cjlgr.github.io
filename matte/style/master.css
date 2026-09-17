@@ -1,10 +1,27 @@
 body {
   background-color: #90908a;
+  /* Mycket svag vinjett - fäst mot fönstret (inte sidan) så att den lite ljusare mitten alltid
+     hamnar bakom #appContainer, som ju också är horisontellt centrerat i fönstret. */
+  background-image: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,0.34) 100%);
+  background-attachment: fixed;
   color: #111111;
   font-size: 1.2em;
   font-family: 'Concert One', sans-serif;
   min-width: 330px;
 
+}
+
+#appContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  /* Gör wrappern till positioneringsreferens för barn som t.ex. .score-wrapper (position:
+     absolute; right: 0) - annars klistrar de sig mot webbläsarfönstrets kanter istället för
+     mot den smala, centrerade spelytan på breda skärmar. */
+  position: relative;
+  /* Utan detta "läcker" en nästlad els margin-top (t.ex. bock-rutornas 75px-marginal på
+     menyn) uppåt genom wrappern och skjuter ner HELA dess innehåll - däribland loggan och
+     ikonerna, som nu positioneras relativt wrappern istället för webbläsarfönstret. */
+  display: flow-root;
 }
 
 h1, h2, h3, h4, h5, h6, legend, label {
@@ -25,7 +42,7 @@ a {
   position: absolute;
   right: 0;
   top: 0;
-  padding: 18px;
+  padding: 8px;
 }
 .text-center {
   text-align: center;
@@ -296,7 +313,7 @@ button.btn-transparent:hover {
 }
 
 .counter-wrapper {
-  margin-top: 20px;
+  margin: 10px 0 16px;
   height: 20px;
   width: 100%;
   box-sizing: border-box;
@@ -306,17 +323,19 @@ button.btn-transparent:hover {
 }
 
 #counterbar {
-  /*background-color: #ff5e5e;*/
   height: 100%;
-  transition: 1s;
+  transition: width 1s, background-color 1s;
   border-radius: 100px;
-
-  background: repeating-linear-gradient(
+  /* Färgen (som tonar grön->gul->orange->röd) ligger i background-color, som CSS kan tona mjukt.
+     Randmönstret ligger istället i background-image, som ett fast, halvgenomskinligt overlay -
+     det ändras aldrig, så det behöver ingen egen transition och stör inte färgtoningen. */
+  background-color: #4caf50;
+  background-image: repeating-linear-gradient(
     45deg,
-    #ff5e5e,
-    #ff5e5e 10px,
-    #e45353 10px,
-    #e45353 20px
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.2) 10px,
+    rgba(0, 0, 0, 0.1) 10px,
+    rgba(0, 0, 0, 0.1) 20px
   );
 }
 
@@ -798,14 +817,20 @@ input.correct-answer {
   top: 0;
   left: 0;
   width: 100%;
+  box-sizing: border-box;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   background-color: rgba(117,117,113,0.3);
-  padding: 10px 10px 0 10px;
-  height: 50px;
+  /* Baren själv går ända ut till kanterna, men innehållet (Tillbaka-knappen) hålls infällt i
+     linje med den centrerade 600px-spelytan på breda skärmar - samma "50vw minus halva
+     max-bredden"-uträkning som maskotens och emoji-burstens position. */
+  padding: 0 max(10px, calc(50vw - 300px + 10px));
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
 .toolbar-fixed+div {
-  margin-top: 70px;
+  margin-top: 80px;
 }
 
 .countdown {
@@ -870,8 +895,9 @@ input.correct-answer {
 
 #gametime {
   position: fixed;
-  top: 5px;
-  right: 5px;
+  top: 7px;
+  /* Samma infällning i linje med spelytan som toolbaren, se .toolbar-fixed. */
+  right: max(5px, calc(50vw - 300px + 5px));
 }
 .gametime-text {
   width: 120px;
@@ -904,7 +930,7 @@ input.correct-answer {
 
 @keyframes emoji-burst-move {
   0% {
-    transform: translate(0, 0) scale(0.4) rotate(0deg);
+    transform: translate(0, 0) scale(0.9) rotate(0deg);
   }
   100% {
     transform: translate(var(--dx, -60px), var(--dy, -260px)) scale(1) rotate(var(--rot, 20deg));
@@ -941,7 +967,11 @@ input.correct-answer {
 
 .mascot-display {
   position: fixed;
-  left: 14px;
+  /* position:fixed positionerar alltid mot webbläsarfönstret, inte mot #appContainer - på
+     breda skärmar hamnar den annars kvar ute vid fönstrets riktiga vänsterkant istället för
+     vid den centrerade 600px-spelytans kant. Räkna fram spelytans vänsterkant för hand
+     (50vw - halva max-bredden) och fall tillbaka på 14px när skärmen är smalare än 600px. */
+  left: max(14px, calc(50vw - 300px + 14px));
   bottom: 14px;
   z-index: 600;
   font-size: 3.2em;

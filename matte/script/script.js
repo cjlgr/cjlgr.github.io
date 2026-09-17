@@ -896,9 +896,58 @@ var game = {
   },
 
   setAlarm: function(alarm){
+    // Avbryt en ev. kvarvarande nedräkning från förra frågan innan en ny startas - annars kan
+    // den gamla och den nya nedräkningen råka snurra samtidigt, vilket gör att tiden tickar ner
+    // fortare än en gång per sekund.
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
     this.alarm = alarm;
     this.time = alarm;
+
+    var bar = document.getElementById('counterbar');
+    if (bar) {
+      // Fyll baren direkt till 100% (grön) utan transition inför den nya frågan - annars glider
+      // den sakta upp/om färg istället för att vara redo direkt.
+      bar.style.transition = 'none';
+      bar.style.width = '100%';
+      bar.style.backgroundColor = this.getTimerBarColorString(100);
+      void bar.offsetWidth; // tvinga reflow så transition:none verkligen hinner appliceras
+      bar.style.transition = '';
+    }
+
     this.tick();
+  },
+
+  // Ankarfärger som timerbaren glider mellan: grön vid full tid, via gult och orange, till rött
+  // när tiden nästan är slut.
+  timerBarColorStops: [
+    { pct: 100, rgb: [76, 175, 80] },
+    { pct: 50, rgb: [255, 214, 51] },
+    { pct: 25, rgb: [255, 152, 0] },
+    { pct: 0, rgb: [244, 67, 54] }
+  ],
+
+  getTimerBarColor: function(percent){
+    var stops = this.timerBarColorStops;
+    var clamped = Math.max(0, Math.min(100, percent));
+    var upper = stops[0], lower = stops[stops.length - 1];
+    for (var i = 0; i < stops.length - 1; i++) {
+      if (clamped <= stops[i].pct && clamped >= stops[i + 1].pct) {
+        upper = stops[i];
+        lower = stops[i + 1];
+        break;
+      }
+    }
+    var span = upper.pct - lower.pct;
+    var t = span === 0 ? 0 : (clamped - lower.pct) / span;
+    return upper.rgb.map(function(c, idx){
+      return Math.round(lower.rgb[idx] + (c - lower.rgb[idx]) * t);
+    });
+  },
+
+  getTimerBarColorString: function(percent){
+    return 'rgb(' + this.getTimerBarColor(percent).join(',') + ')';
   },
 
   tick: function(){
@@ -924,6 +973,7 @@ var game = {
     var bar = $('#counterbar'),
         percent = this.time/this.alarm*100;
     bar.css('width', percent + '%');
+    bar.css('background-color', this.getTimerBarColorString(percent));
   },
 
   createNewQuestion: function(){
@@ -1506,6 +1556,12 @@ var game = {
     var viewport = window.visualViewport;
     var visibleHeight = viewport ? viewport.height : game.fullScreenHeight;
     var visibleTop = viewport ? viewport.offsetTop : 0;
+    // Bursten spawnar nära #appContainers högerkant, inte webbläsarfönstrets - annars hamnar
+    // den ute vid fönstrets riktiga kant istället för den centrerade 600px-spelytans kant på
+    // breda skärmar.
+    var appContainer = document.getElementById('appContainer');
+    var containerRight = appContainer ? appContainer.getBoundingClientRect().right : window.innerWidth;
+    var rightEdgeInset = window.innerWidth - containerRight;
     for (var i = 0; i < count; i++) {
       let emoji = pool[game.getRandomInt(0, pool.length - 1)];
       let el = document.createElement('span');
@@ -1525,7 +1581,7 @@ var game = {
       el.style.setProperty('--dy', dy);
       el.style.setProperty('--rot', rot);
       el.style.fontSize = (1.4 + Math.random() * 1.1).toFixed(2) + 'em';
-      el.style.right = game.getRandomInt(5, 40) + 'px';
+      el.style.right = (rightEdgeInset + game.getRandomInt(5, 40)) + 'px';
       el.style.top = spawnTop + 'px';
       el.style.animationDuration = duration;
       el.style.animationDelay = delay;
@@ -1548,15 +1604,21 @@ var game = {
       // animationen stängs av - annars hoppar den till sitt ursprungsläge ett kort ögonblick.
       var currentOpacity = computed.opacity;
       var currentTransform = computed.transform;
+      var dx = el.style.getPropertyValue('--dx') || '-60px';
+      var dy = el.style.getPropertyValue('--dy') || '-260px';
+      var rot = el.style.getPropertyValue('--rot') || '20deg';
       el.style.animation = 'none';
       el.style.transform = currentTransform;
       el.style.opacity = currentOpacity;
-      el.style.transition = 'opacity 0.15s linear';
+      el.style.transition = 'transform 0.6s ease-out, opacity 0.6s linear';
       void el.offsetWidth; // tvinga fram en reflow så transitionen faktiskt appliceras
+      // Fortsätt röra sig mot sitt ursprungliga mål samtidigt som den tonar bort, istället
+      // för att frysa på plats - annars ser det ut som den plötsligt stannar mitt i luften.
+      el.style.transform = 'translate(' + dx + ', ' + dy + ') scale(1) rotate(' + rot + ')';
       el.style.opacity = '0';
       setTimeout(function(){
         el.remove();
-      }, 180);
+      }, 620);
     });
   },
 
@@ -1680,9 +1742,27 @@ var game = {
 
   // Visar hur många rätt i rad man har (från och med 2) ovanför frågan. Nollställs vid
   // fel svar, "Visa svaret" eller när ett nytt spelpass startas.
+  // Streak-barens färger, en per tiotal: 2-9 är den första, 10-19 den andra, osv. Den sista
+  // (90-99) återanvänds för 100+ istället för att introducera ännu en ny färg.
+  streakTierColors: [
+    { bg: '#ccc5ae', color: '#4a473f' }, // 2-9
+    { bg: '#f2a53e', color: '#5c2f00' }, // 10-19
+    { bg: '#f2793e', color: '#4a1400' }, // 20-29
+    { bg: '#ef5b4e', color: '#ffffff' }, // 30-39
+    { bg: '#e14f8a', color: '#ffffff' }, // 40-49
+    { bg: '#a95bd1', color: '#ffffff' }, // 50-59
+    { bg: '#6f6bd1', color: '#ffffff' }, // 60-69
+    { bg: '#4a90d9', color: '#ffffff' }, // 70-79
+    { bg: '#2bb3a3', color: '#ffffff' }, // 80-89
+    { bg: '#d4af37', color: '#3d2b00' }  // 90-99, 100+
+  ],
+
   updateStreakDisplay: function(){
     var el = $('#streakDisplay');
     if (this.streak >= 2) {
+      var tier = Math.min(Math.floor(this.streak / 10), this.streakTierColors.length - 1);
+      var tierColor = this.streakTierColors[tier];
+      el.css({ backgroundColor: tierColor.bg, color: tierColor.color });
       el.text('⭐ Streak ' + this.streak).show();
     } else {
       el.hide();
@@ -1747,6 +1827,12 @@ var game = {
     gametimeText.html(this.formatTime(seconds));
     gametime.show();
     game.gametime = seconds;
+    // #gametime finns inte än när updateFixedPositions senast kördes (den körs bara på
+    // visual viewport-resize/scroll) - positionera den mot #appContainer direkt nu istället
+    // för att låta den stå kvar på sitt CSS-default (webbläsarfönstrets riktiga kant).
+    if (game.updateFixedPositions) {
+      game.updateFixedPositions();
+    }
 
     game.gameTimeInterval = setInterval(function(){
       seconds--;
@@ -2311,6 +2397,9 @@ $(document).ready(function() {
   // även när tangentbordet är öppet i iOS Safari (då flyttas visual viewport
   // utan att layout viewport scrollar). #gametime läggs till/tas bort dynamiskt
   // så vi slår upp den vid varje uppdatering istället för att cacha referensen.
+  // Den horisontella infällningen (linje med den centrerade spelytan) sköts av CSS
+  // (calc(50vw - ...)) på både .toolbar-fixed och #gametime - JS behöver bara hålla dem
+  // synkade lodrätt med visual viewport, plus baren full bredd över hela den synliga ytan.
   var fixedToolbar = document.querySelector('.toolbar-fixed');
   if (window.visualViewport) {
     var updateFixedPositions = function(){
@@ -2322,13 +2411,12 @@ $(document).ready(function() {
       }
       var gametime = document.getElementById('gametime');
       if (gametime) {
-        gametime.style.top = (vv.offsetTop + 5) + 'px';
-        gametime.style.right = 'auto';
-        gametime.style.left = (vv.offsetLeft + vv.width - gametime.offsetWidth - 5) + 'px';
+        gametime.style.top = (vv.offsetTop + 7) + 'px';
       }
     };
     window.visualViewport.addEventListener('resize', updateFixedPositions);
     window.visualViewport.addEventListener('scroll', updateFixedPositions);
+    game.updateFixedPositions = updateFixedPositions;
     updateFixedPositions();
   }
 
