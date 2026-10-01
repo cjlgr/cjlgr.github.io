@@ -139,6 +139,7 @@ var game = {
         max: 10,
         minb: 0,
         maxb: 10,
+        table: 0, // 0 = ingen tabell, annars tränas bara den tabellen (faktorintervallen ignoreras)
         time: 30
       }
     ]
@@ -188,7 +189,7 @@ var game = {
   },
 
   // Kort, positionsbaserad kod för elevlänken:
-  // ?s=<träning><tävling><test><lätt><normal><svår><anpassad><plus><minus><gånger><x><plus-f><minus-f><gånger-f><x-f><visuell hjälp>-<minplus>-<maxplus>-<minminus>-<maxminus>-<mina>-<maxa>-<minb>-<maxb>-<antal frågor>-<tid>
+  // ?s=<träning><tävling><test><lätt><normal><svår><anpassad><plus><minus><gånger><x><plus-f><minus-f><gånger-f><x-f><visuell hjälp>-<minplus>-<maxplus>-<minminus>-<maxminus>-<mina>-<maxa>-<minb>-<maxb>-<antal frågor>-<tid>-<tabell>
   // (positionerna med "-f" är vilka räknesätt som är förvalda/ikryssade av de tillåtna)
   // De numeriska delarna efter flaggorna är alla Anpassad-inställningar: plusintervall, minusintervall,
   // multiplikationens två faktorintervall, samt antal testfrågor och testtid
@@ -304,7 +305,7 @@ var game = {
     var mult = [customMulti.min, customMulti.max, customMulti.minb, customMulti.maxb];
     var test = [customTest.numberOfQuestions, customTest.time];
 
-    return [flags].concat(plusMinus).concat(mult).concat(test).join('-');
+    return [flags].concat(plusMinus).concat(mult).concat(test).concat([customMulti.table || 0]).join('-');
   },
 
   // Applicera ?s=-koden på elevens vy (döljer knappar/räknesätt/svårighetsgrader
@@ -401,8 +402,9 @@ var game = {
       $('#studentModeInfo').html(lockedInfoParts.join('<br>')).show();
     }
 
-    // valfria multiplikations- och testinställningar (Anpassad), på formen -mina-maxa-minb-maxb-antal-tid
-    if (parts.length === 11) {
+    // valfria multiplikations- och testinställningar (Anpassad), på formen -mina-maxa-minb-maxb-antal-tid[-tabell]
+    // (tabellen lades till senare, så äldre länkar med 11 delar ska fortfarande fungera)
+    if (parts.length === 11 || parts.length === 12) {
       var minplus = parseInt(parts[1], 10);
       var maxplus = parseInt(parts[2], 10);
       var minminus = parseInt(parts[3], 10);
@@ -443,6 +445,11 @@ var game = {
       if (!isNaN(time)) {
         game.testmode.custom.time = time;
         $('[name=test-time]').val(time);
+      }
+      var table = parseInt(parts[11], 10);
+      if (!isNaN(table) && table >= 0 && table <= 99) {
+        game.levels.custom[2].table = table;
+        $('[name=multtable]').val(table > 0 ? table : '');
       }
     }
   },
@@ -492,6 +499,7 @@ var game = {
       maxa: $('[name=maxa]'),
       minb: $('[name=minb]'),
       maxb: $('[name=maxb]'),
+      table: $('[name=multtable]'),
       qty: $('[name=test-nbr-of-questions]'),
       time: $('[name=test-time]')
     };
@@ -507,9 +515,32 @@ var game = {
       maxa: $('#t-maxa'),
       minb: $('#t-minb'),
       maxb: $('#t-maxb'),
+      table: $('#t-multtable'),
       qty: $('#t-test-nbr-of-questions'),
       time: $('#t-test-time')
     };
+  },
+
+  // Antingen en tabell eller faktorintervallen - stäng av intervallfälten när en tabell är ifylld
+  updateMultTableState: function(fields){
+    var hasTable = game.nonNegativeInt(fields.table.val()) > 0;
+    fields.mina.add(fields.maxa).add(fields.minb).add(fields.maxb).prop('disabled', hasTable);
+  },
+
+  // Tabellträning: den andra faktorn går upp till tabellen själv (14:ans tabell = 14 × 1-14),
+  // men alltid minst upp till 10 så att de små tabellerna blir som vanligt (3:ans = 3 × 1-10).
+  getMultTableMax: function(table){
+    return Math.max(10, table);
+  },
+
+  // Tabellträning: ena faktorn är alltid tabellen, den andra 1-getMultTableMax.
+  // tableFirst avgör vilken sida tabellen hamnar på (slumpas om den utelämnas).
+  getMultTableFactors: function(table, tableFirst){
+    var other = this.getRandomInt(1, this.getMultTableMax(table));
+    if (tableFirst === undefined) {
+      tableFirst = this.getRandomInt(0, 1) === 0;
+    }
+    return tableFirst ? [table, other] : [other, table];
   },
 
   saveHideVisualHelpSetting: function(field){
@@ -570,6 +601,12 @@ var game = {
     game.levels.custom[2].minb = minb;
     game.levels.custom[2].maxb = maxb;
 
+    var table = Math.min(game.nonNegativeInt(fields.table.val()), 99);
+    fields.table.val(table > 0 ? table : '');
+    localStorage.setItem('multTable', table);
+    game.levels.custom[2].table = table;
+    game.updateMultTableState(fields);
+
     var numberOfQuestions = game.nonNegativeInt(fields.qty.val());
     var time = game.nonNegativeInt(fields.time.val());
     fields.qty.val(numberOfQuestions);
@@ -616,6 +653,12 @@ var game = {
       fields.minb.val(game.levels.custom[2].minb);
       fields.maxb.val(game.levels.custom[2].maxb);
     }
+
+    if (localStorage.getItem('multTable')) {
+      game.levels.custom[2].table = parseInt(localStorage.getItem('multTable'));
+    }
+    fields.table.val(game.levels.custom[2].table > 0 ? game.levels.custom[2].table : '');
+    game.updateMultTableState(fields);
 
     if (localStorage.getItem('testNbrOfQuestions')) { // test-nbr-of-questions
       fields.qty.val(localStorage.getItem('testNbrOfQuestions'));
@@ -1012,7 +1055,7 @@ var game = {
 
   createXQuestion: function(){
 
-    var min, max, char, answer, m, 
+    var min, max, table, char, answer, m, 
       helptxt = '',
       orderOfX = this.getRandomInt(0, 1),
       xCharacter = ['A', 'C', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'U', 'V', 'X', 'Y', 'Z'][this.getRandomInt(0, 19)];
@@ -1024,6 +1067,7 @@ var game = {
       if (this.currentLevel[i].mode === this.mode) {
         min = this.currentLevel[i].min;
         max = this.currentLevel[i].max;
+        table = this.currentLevel[i].table;
         char = this.currentLevel[i].char;
       }
     }
@@ -1032,7 +1076,15 @@ var game = {
       tal1 = this.getRandomInt(min, max);
       tal2 = this.getRandomInt(min, max);
     }
-    if (this.mode === 'multi') {
+    if (this.mode === 'multi' && table > 0) {
+      // Tabellen är alltid den kända faktorn, X är den andra (1-getMultTableMax)
+      var tableFactors = this.getMultTableFactors(table, orderOfX === 0);
+      tal1 = tableFactors[0];
+      tal2 = tableFactors[1];
+      // så att smala-intervall-spärren inte räknar på de (ignorerade) faktorintervallen
+      min = 1;
+      max = this.getMultTableMax(table);
+    } else if (this.mode === 'multi') {
       if (orderOfX===0) {
         // Se till att det inte blir 0 x X = 0
         tal1 = this.getRandomInt(Math.max(1, min), max);
@@ -1093,7 +1145,7 @@ var game = {
 
   createQuestion: function(){
 
-    var min, minb, max, maxb, char, answer, m, helptxt = '', customDifficulty = false;
+    var min, minb, max, maxb, table, char, answer, m, helptxt = '', customDifficulty = false;
 
     m = this.getRandomInt(0, this.modes.length-1);
     this.mode = this.modes[m];
@@ -1104,6 +1156,7 @@ var game = {
         minb = this.currentLevel[i].minb;
         max = this.currentLevel[i].max;
         maxb = this.currentLevel[i].maxb;
+        table = this.currentLevel[i].table;
         char = this.currentLevel[i].char;
       }
     }
@@ -1116,7 +1169,15 @@ var game = {
       tal1 = this.getRandomInt(min, max);
       tal2 = this.getRandomInt(Math.min(min, tal1), Math.min(tal1, max));
     }
-    if (this.mode === 'multi') {
+    if (this.mode === 'multi' && table > 0) {
+      var tableFactors = this.getMultTableFactors(table);
+      tal1 = tableFactors[0];
+      tal2 = tableFactors[1];
+      // så att smala-intervall-spärren räknar på tabellens möjliga frågor
+      min = max = table;
+      minb = 1;
+      maxb = this.getMultTableMax(table);
+    } else if (this.mode === 'multi') {
       if (minb !== undefined) {
         customDifficulty = true;
         if (this.getRandomInt(0,1)===0) {
@@ -1169,7 +1230,7 @@ var game = {
 
   createTestQuestion: function(){
 
-    var min, minb, max, maxb, char, answer, m, helptxt = '', customDifficulty = false;
+    var min, minb, max, maxb, table, char, answer, m, helptxt = '', customDifficulty = false;
 
     m = this.getRandomInt(0, this.modes.length-1);
     this.mode = this.modes[m];
@@ -1180,6 +1241,7 @@ var game = {
         minb = this.currentLevel[i].minb;
         max = this.currentLevel[i].max;
         maxb = this.currentLevel[i].maxb;
+        table = this.currentLevel[i].table;
         char = this.currentLevel[i].char;
       }
     }
@@ -1192,7 +1254,15 @@ var game = {
       tal1 = this.getRandomInt(min, max);
       tal2 = this.getRandomInt(Math.min(min, tal1), Math.min(tal1, max));
     }
-    if (this.mode === 'multi') {
+    if (this.mode === 'multi' && table > 0) {
+      var tableFactors = this.getMultTableFactors(table);
+      tal1 = tableFactors[0];
+      tal2 = tableFactors[1];
+      // så att smala-intervall-spärren räknar på tabellens möjliga frågor
+      min = max = table;
+      minb = 1;
+      maxb = this.getMultTableMax(table);
+    } else if (this.mode === 'multi') {
       if (minb !== undefined) {
         customDifficulty = true;
         if (this.getRandomInt(0,1)===0) {
@@ -1245,7 +1315,7 @@ var game = {
 
   createTestXQuestion: function(){
 
-    var min, max, char, answer, m,
+    var min, max, table, char, answer, m,
       orderOfX = this.getRandomInt(0, 1),
       xCharacter = ['A', 'C', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'U', 'V', 'X', 'Y', 'Z'][this.getRandomInt(0, 19)];
 
@@ -1256,6 +1326,7 @@ var game = {
       if (this.currentLevel[i].mode === this.mode) {
         min = this.currentLevel[i].min;
         max = this.currentLevel[i].max;
+        table = this.currentLevel[i].table;
         char = this.currentLevel[i].char;
       }
     }
@@ -1264,7 +1335,15 @@ var game = {
       tal1 = this.getRandomInt(min, max);
       tal2 = this.getRandomInt(min, max);
     }
-    if (this.mode === 'multi') {
+    if (this.mode === 'multi' && table > 0) {
+      // Tabellen är alltid den kända faktorn, X är den andra (1-getMultTableMax)
+      var tableFactors = this.getMultTableFactors(table, orderOfX === 0);
+      tal1 = tableFactors[0];
+      tal2 = tableFactors[1];
+      // så att smala-intervall-spärren inte räknar på de (ignorerade) faktorintervallen
+      min = 1;
+      max = this.getMultTableMax(table);
+    } else if (this.mode === 'multi') {
       if (orderOfX===0) {
         // Se till att det inte blir 0 x X = 0
         tal1 = this.getRandomInt(Math.max(1, min), max);
@@ -1525,10 +1604,213 @@ var game = {
 
   renderMascotDisplay: function(){
     var mascot = game.getMascot();
-    if (mascot) {
-      $('#mascotDisplay').text(mascot).show();
+    // Maskoten göms medan man är inne på flex-skärmen (där den ju redan syns i stort format)
+    var flexing = $('#flexScreen').is(':visible');
+    if (mascot && !flexing) {
+      // Inre span så att studsen (se bounceMascot) inte krockar med maskotens svävning
+      $('#mascotDisplay').html('<span class="mascot-display-inner">' + mascot + '</span>').show();
     } else {
       $('#mascotDisplay').hide();
+    }
+  },
+
+  // Prestationer: låses upp en gång för alltid och sparas i localStorage. De påverkas inte av
+  // "Nollställ poäng". Hittills bara streak-baserade (streak = antal rätt i rad under ett pass).
+  // Prestationer med color låser upp en ny bakgrundsfärg - de läggs till automatiskt för var
+  // tionde streak (se buildBackgroundAchievements längst ner), en per färg i streakTierColors.
+  achievements: [
+    {
+      id: 'flex',
+      streak: 30,
+      title: '💪 Flexa',
+      description: 'Du klarade 30 rätt i rad! Nu kan du flexa med din maskot - tryck på den så kommer du till flex-skärmen.'
+    }
+  ],
+
+  getUnlockedAchievements: function(){
+    try {
+      return JSON.parse(localStorage.getItem('achievements')) || {};
+    } catch (e) {
+      return {};
+    }
+  },
+
+  hasAchievement: function(id){
+    return !!game.getUnlockedAchievements()[id];
+  },
+
+  // Körs efter varje rätt svar - låser upp alla streak-prestationer man just nått och visar en popup
+  checkStreakAchievements: function(){
+    var unlocked = game.getUnlockedAchievements();
+    var newlyUnlocked = [];
+    for (var i = 0; i < game.achievements.length; i++) {
+      var achievement = game.achievements[i];
+      if (achievement.streak && game.streak >= achievement.streak && !unlocked[achievement.id]) {
+        unlocked[achievement.id] = true;
+        newlyUnlocked.push(achievement);
+      }
+    }
+    if (newlyUnlocked.length === 0) {
+      return;
+    }
+    localStorage.setItem('achievements', JSON.stringify(unlocked));
+    game.renderMascotDisplay();
+
+    var html = '';
+    for (var j = 0; j < newlyUnlocked.length; j++) {
+      html += '<h4 class="text-center" style="font-size: 1.4em; margin: 20px 0 5px 0;">' + newlyUnlocked[j].title + '</h4>';
+      html += '<p class="text-center">' + newlyUnlocked[j].description + '</p>';
+    }
+    var flexUnlocked = newlyUnlocked.some(function(a){ return a.id === 'flex'; });
+    if (flexUnlocked && !game.getMascot()) {
+      html += '<p class="text-center" style="color: #3c3c3a;">Välj först en maskot i emojisamlingen 🙂</p>';
+    }
+    $('#achievementUnlockList').html(html);
+    $('#achievementUnlockPopup').css('display', 'flex');
+    $('#achievementUnlockClose').focus();
+  },
+
+  // Upplåsta prestationer i emojisamlingen - sektionen syns först när man låst upp någon
+  renderAchievementList: function(){
+    var unlocked = game.getUnlockedAchievements();
+    var html = '';
+    for (var i = 0; i < game.achievements.length; i++) {
+      var achievement = game.achievements[i];
+      if (unlocked[achievement.id]) {
+        html += '<div class="achievement-item" data-achievement="' + achievement.id + '">' +
+          '<div class="achievement-title">' + achievement.title + '</div>' +
+          '<div class="achievement-requirement">' + achievement.streak + ' rätt i rad</div>' +
+          '</div>';
+      }
+    }
+    $('#achievementList').html(html);
+    $('#achievementSection').toggle(html !== '');
+    game.renderBackgroundPicker();
+  },
+
+  // Bakgrundsfärgen sparas som id:t på prestationen som låste upp den (inget sparat = standard)
+  getBackgroundAchievement: function(){
+    var id = localStorage.getItem('backgroundAchievement');
+    for (var i = 0; i < game.achievements.length; i++) {
+      if (game.achievements[i].id === id && game.achievements[i].color && game.hasAchievement(id)) {
+        return game.achievements[i];
+      }
+    }
+    return null;
+  },
+
+  setBackgroundAchievement: function(id){
+    if (id) {
+      localStorage.setItem('backgroundAchievement', id);
+    } else {
+      localStorage.removeItem('backgroundAchievement');
+    }
+    game.applyBackgroundColor();
+  },
+
+  applyBackgroundColor: function(){
+    var achievement = game.getBackgroundAchievement();
+    if (achievement) {
+      document.documentElement.style.setProperty('--app-bg', achievement.color);
+    } else {
+      document.documentElement.style.removeProperty('--app-bg');
+    }
+    // Vissa färger har även ett mönster ovanpå (t.ex. Guld), se data-bg-pattern i master.css
+    if (achievement && achievement.pattern) {
+      document.documentElement.setAttribute('data-bg-pattern', achievement.pattern);
+    } else {
+      document.documentElement.removeAttribute('data-bg-pattern');
+    }
+  },
+
+  // Färgväljaren i Prestationer: Standard plus alla upplåsta färger. Syns först när minst en färg är upplåst.
+  renderBackgroundPicker: function(){
+    var selected = game.getBackgroundAchievement();
+    var selectedId = selected ? selected.id : '';
+    var swatches = [{ id: '', color: '#90908a', colorName: 'Standard' }];
+    for (var i = 0; i < game.achievements.length; i++) {
+      if (game.achievements[i].color && game.hasAchievement(game.achievements[i].id)) {
+        swatches.push(game.achievements[i]);
+      }
+    }
+    var html = '';
+    for (var j = 0; j < swatches.length; j++) {
+      var selectedClass = (swatches[j].id === selectedId) ? ' selected' : '';
+      html += '<div class="background-swatch-wrapper">' +
+        '<button class="background-swatch' + selectedClass + (swatches[j].pattern ? ' bg-pattern-' + swatches[j].pattern : '') + '" data-achievement="' + swatches[j].id + '" style="background-color: ' + swatches[j].color + ';"></button>' +
+        '<div class="background-swatch-label">' + swatches[j].colorName + '</div>' +
+        '</div>';
+    }
+    $('#backgroundSwatches').html(html);
+    $('#backgroundPicker').toggle(swatches.length > 1);
+  },
+
+  // Liten studs på plats när man trycker på maskoten innan Flexa är upplåst
+  bounceMascot: function(){
+    var inner = $('#mascotDisplay .mascot-display-inner');
+    inner.removeClass('bounce');
+    void inner[0].offsetWidth; // starta om studsen även om man trycker igen mitt i den
+    inner.addClass('bounce');
+  },
+
+  openFlexScreen: function(){
+    var mascot = game.getMascot();
+    if (!mascot) {
+      return;
+    }
+    $('#flexMascot').html('<span class="flex-mascot-inner">' + mascot + '</span>');
+    $('#flexScreen').css('display', 'flex');
+    game.renderMascotDisplay();
+  },
+
+  closeFlexScreen: function(){
+    $('#flexScreen').hide();
+    game.renderMascotDisplay();
+    // Fortsätt där man var - t.ex. med Enter på "Ny fråga" mitt i ett pass
+    $('#newQuestion:visible').focus();
+  },
+
+  // Tryck på maskoten på flex-skärmen: den studsar till och skjuter ut en massa små kopior av sig själv
+  flexMascot: function(){
+    var inner = $('#flexMascot .flex-mascot-inner');
+    inner.removeClass('bounce');
+    void inner[0].offsetWidth; // starta om studsen även om man trycker igen mitt i den
+    inner.addClass('bounce');
+
+    var rect = inner[0].getBoundingClientRect();
+    var originX = rect.left + rect.width / 2;
+    var originY = rect.top + rect.height / 2;
+    var mascot = game.getMascot();
+    var count = game.getRandomInt(12, 18);
+    for (var i = 0; i < count; i++) {
+      let el = document.createElement('span');
+      el.className = 'emoji-burst-particle';
+      el.textContent = mascot;
+
+      let angle = Math.random() * Math.PI * 2;
+      let distance = game.getRandomInt(120, 260);
+      let dx = Math.round(Math.cos(angle) * distance) + 'px';
+      let dy = Math.round(Math.sin(angle) * distance) + 'px';
+      let rot = game.getRandomInt(-120, 120) + 'deg';
+      let duration = (0.9 + Math.random() * 0.6).toFixed(2) + 's';
+      let delay = (Math.random() * 0.1).toFixed(2) + 's';
+      let size = 1.4 + Math.random() * 1.4;
+
+      el.style.setProperty('--dx', dx);
+      el.style.setProperty('--dy', dy);
+      el.style.setProperty('--rot', rot);
+      el.style.fontSize = size.toFixed(2) + 'em';
+      // Centrera partikeln på maskotens mittpunkt (en emoji är ungefär lika bred/hög som fontstorleken)
+      el.style.left = 'calc(' + originX + 'px - ' + (size / 2).toFixed(2) + 'em)';
+      el.style.top = 'calc(' + originY + 'px - ' + (size / 2).toFixed(2) + 'em)';
+      el.style.animationDuration = duration;
+      el.style.animationDelay = delay;
+
+      // Inuti flex-skärmen, före maskoten, så att partiklarna skjuts ut bakom den
+      document.getElementById('flexScreen').insertBefore(el, document.getElementById('flexMascot'));
+      setTimeout(function(){
+        el.remove();
+      }, (parseFloat(duration) + parseFloat(delay)) * 1000 + 150);
     }
   },
 
@@ -1543,6 +1825,7 @@ var game = {
     $('#collectionContestGrid').html(game.buildEmojiCollectionHtml(game.emojiTierEmojisByMode.contest, contestscore));
     $('#collectionTrainingFinal').html(game.buildFinalEmojiHtml(game.emojiTierEmojisByMode.training, trainingscore));
     $('#collectionContestFinal').html(game.buildFinalEmojiHtml(game.emojiTierEmojisByMode.contest, contestscore));
+    game.renderAchievementList();
   },
 
   emojiBurst: function(pool, count){
@@ -1738,12 +2021,61 @@ var game = {
       $('#emojiUnlockClose').focus();
     }
 
+    // Efter emoji-popupen, så att prestations-popupen hamnar överst om båda dyker upp samtidigt
+    this.checkStreakAchievements();
+
   },
 
   // Visar hur många rätt i rad man har (från och med 2) ovanför frågan. Nollställs vid
   // fel svar, "Visa svaret" eller när ett nytt spelpass startas.
   // Streak-barens färger, en per tiotal: 2-9 är den första, 10-19 den andra, osv. Den sista
   // (90-99) återanvänds för 100+ istället för att introducera ännu en ny färg.
+  // Namnen på bakgrundsfärgerna som låses upp vid var tionde streak, i samma ordning som
+  // streakTierColors (första, 2-9, är ingen upplåsbar färg och saknar därför namn). Namnen
+  // är skämtsamma och beskriver de nedtonade färgerna (se muteBackgroundColor), inte streak-barens.
+  backgroundColorNames: [null, 'Ponny', 'Fiskpinne', 'Krabba', 'Tuggummi', 'Bläckfisk', 'Blåmärke', 'Badvatten', 'Grodkyss', 'Guld'],
+
+  // Bakgrunder som inte är en vanlig nedtonad streak-färg, per streak-tiotal. Guld (90) är den
+  // finaste och ska kännas lyxig - en starkare guldton (inte nedtonad, annars blir den nästan
+  // likadan som Ponny) med ett metalliskt mönster ovanpå.
+  specialBackgrounds: {
+    9: { color: '#c9a23a', pattern: 'gold' }
+  },
+
+  // Blandar en streak-färg 50/50 med standardbakgrunden (#90908a). Streak-färgerna i full styrka
+  // blir för skrikiga som helskärmsbakgrund och krockar med spelets egna färger (t.ex. Svår-mätarens
+  // orange, Mellans blå och de gula knapparna) - nedtonade känns de fortfarande igen men sticker inte ut.
+  muteBackgroundColor: function(hex){
+    var base = [0x90, 0x90, 0x8a];
+    var result = '#';
+    for (var i = 0; i < 3; i++) {
+      var channel = parseInt(hex.substr(1 + i * 2, 2), 16);
+      var mixed = Math.round((channel + base[i]) / 2);
+      result += ('0' + mixed.toString(16)).slice(-2);
+    }
+    return result;
+  },
+
+  // En bakgrundsfärg per streak-tiotal (10, 20, ... 90), i en nedtonad variant av streak-barens
+  // färg vid den streaken. Körs en gång vid start och sorterar in dem bland övriga prestationer efter streak.
+  buildBackgroundAchievements: function(){
+    for (var tier = 1; tier < game.streakTierColors.length; tier++) {
+      var streak = tier * 10;
+      var name = game.backgroundColorNames[tier];
+      var special = game.specialBackgrounds[tier] || {};
+      game.achievements.push({
+        id: 'bg' + streak,
+        streak: streak,
+        title: '🎨 Bakgrund: ' + name,
+        color: special.color || game.muteBackgroundColor(game.streakTierColors[tier].bg),
+        pattern: special.pattern || null,
+        colorName: name,
+        description: 'Du klarade ' + streak + ' rätt i rad! Nu kan du byta bakgrundsfärg - välj den under Prestationer i emojisamlingen 🙂'
+      });
+    }
+    game.achievements.sort(function(a, b){ return a.streak - b.streak; });
+  },
+
   streakTierColors: [
     { bg: '#ccc5ae', color: '#4a473f' }, // 2-9
     { bg: '#f2a53e', color: '#5c2f00' }, // 10-19
@@ -1929,6 +2261,8 @@ $(document).ready(function() {
   game.loadCustomDifficultySettings();
   game.loadHideVisualHelpSetting();
   game.renderMascotDisplay();
+  game.buildBackgroundAchievements();
+  game.applyBackgroundColor();
 
   // window.resize (till skillnad från visualViewport.resize) triggas av en riktig storleksändring
   // - t.ex. att skärmen roteras eller att man ändrar bredd på fönstret på desktop - men INTE av
@@ -1966,6 +2300,14 @@ $(document).ready(function() {
     if (value.indexOf('-') !== -1) {
       $(this).val(value.replace(/-/g, ''));
     }
+  });
+
+  // Tabell eller faktorintervall: stäng av intervallfälten direkt när en tabell skrivs in
+  $('[name=multtable]').on('input', function(){
+    game.updateMultTableState(game.getMultTestFields());
+  });
+  $('#t-multtable').on('input', function(){
+    game.updateMultTableState(game.getTeacherMultTestFields());
   });
 
   var settingsButton = $('#settingsButton');
@@ -2046,6 +2388,7 @@ $(document).ready(function() {
     $('#t-maxa').val(10);
     $('#t-minb').val(0);
     $('#t-maxb').val(10);
+    $('#t-multtable').val('');
     $('#t-test-nbr-of-questions').val(50);
     $('#t-test-time').val(300);
     $('#t-checkHideVisualHelp').prop('checked', false);
@@ -2144,6 +2487,7 @@ $(document).ready(function() {
     $('[name=maxa]').val(10);
     $('[name=minb]').val(0);
     $('[name=maxb]').val(10);
+    $('[name=multtable]').val('');
     $('[name=test-nbr-of-questions]').val(50);
     $('[name=test-time]').val(300);
     $('#checkHideVisualHelp').prop('checked', false);
@@ -2185,10 +2529,15 @@ $(document).ready(function() {
     openEmojiCollection();
   });
 
+  // Med Flexa-prestationen tar maskoten en till flex-skärmen, annars studsar den bara till
   var mascotDisplay = $('#mascotDisplay');
   mascotDisplay.on('click', function(e){
     e.preventDefault();
-    openEmojiCollection();
+    if (game.hasAchievement('flex')) {
+      game.openFlexScreen();
+    } else {
+      game.bounceMascot();
+    }
   });
 
   var emojiCollectionCloseButton = $('#emojiCollectionclose');
@@ -2208,6 +2557,13 @@ $(document).ready(function() {
       game.setMascot(emoji);
     }
     game.renderEmojiCollection();
+  });
+
+  // Byt bakgrundsfärg bland de upplåsta (eller tillbaka till Standard)
+  $('#emojiCollection').on('click', '.background-swatch', function(e){
+    e.preventDefault();
+    game.setBackgroundAchievement($(this).data('achievement'));
+    game.renderBackgroundPicker();
   });
 
   var collectionResetScoreButton = $('#collectionResetScore');
@@ -2292,6 +2648,36 @@ $(document).ready(function() {
     // trycka Enter rakt igenom utan att behöva klicka någonstans.
     $('#newQuestion').focus();
   })
+
+  var achievementUnlockCloseButton = $('#achievementUnlockClose');
+  achievementUnlockCloseButton.on('click', function(e){
+    e.preventDefault();
+    $('#achievementUnlockPopup').hide();
+    // Låg emoji-popupen bakom, fortsätt dit - annars till "Ny fråga"
+    if ($('#emojiUnlockPopup').is(':visible')) {
+      $('#emojiUnlockClose').focus();
+    } else {
+      $('#newQuestion').focus();
+    }
+  });
+
+  $('#flexclose').on('click', function(e){
+    e.preventDefault();
+    game.closeFlexScreen();
+  });
+
+  // Genväg till emojisamlingen - flex-skärmen ligger ovanpå den vanliga vyn, så stäng den först
+  // så att samlingens "Tillbaka" hamnar på vyn som låg under (t.ex. ett pågående spel)
+  $('#flexCollectionButton').on('click', function(e){
+    e.preventDefault();
+    game.closeFlexScreen();
+    openEmojiCollection();
+  });
+
+  $('#flexMascot').on('click', function(e){
+    e.preventDefault();
+    game.flexMascot();
+  });
 
 
   var answerButton = $('#answerButton');

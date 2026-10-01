@@ -1,5 +1,10 @@
+:root {
+  /* Bakgrundsfärgen - kan bytas till en upplåst färg via Prestationer (se applyBackgroundColor) */
+  --app-bg: #90908a;
+}
+
 body {
-  background-color: #90908a;
+  background-color: var(--app-bg);
   /* Mycket svag vinjett - fäst mot fönstret (inte sidan) så att den lite ljusare mitten alltid
      hamnar bakom #appContainer, som ju också är horisontellt centrerat i fönstret. */
   background-image: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,0.34) 100%);
@@ -51,7 +56,7 @@ a {
 #menu-score-wrapper {
   margin: 50px auto 0;
   max-width: 300px;
-  background-color: #6b6b65;
+  background-color: rgba(0,0,0,0.4);
   border-radius: 5px;
   padding: 20px;
 }
@@ -408,7 +413,7 @@ button.btn-transparent:hover {
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  background-color: #5c5b5b;
+  background-color: rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -426,8 +431,8 @@ button.btn-transparent:hover {
 }
 
 .emoji-collection-item.locked {
-  background-color: #414141;
-  color: #8a8a8a;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.5);
   flex-direction: column;
   font-size: 0.9em;
 }
@@ -488,7 +493,7 @@ input[data-type="test-input"]:focus {
 }
 
 .green-box {
-  color: #27ff00;
+  color: rgba(0,0,0,0.5);
 }
 
 .test-result-box {
@@ -511,7 +516,7 @@ input[data-type="test-input"]:focus {
 }
 
 .green-text {
-  color: #28ff00;
+  color: rgba(0,0,0,0.5);
 }
 
 .blue-text {
@@ -681,6 +686,7 @@ input[type=checkbox]:disabled+label {
 
 .difficulty input:checked+*+label {
   color: black;
+  background-color: rgba(0, 0, 0, 0.3);
 }
 .difficulty input:checked+.meter-infant+label {
   color: #27ff00;
@@ -701,7 +707,7 @@ input[type=checkbox]:disabled+label {
   background-color: #ffa500;
 }
 .difficulty input:checked+.meter-high+label {
-  color: #6f05e1;
+  color: #47048f;
 }
 .difficulty input:checked+.meter-high {
   color: #6f05e1;
@@ -712,7 +718,7 @@ input[type=checkbox]:disabled+label {
   position: relative;
   width: 50px;
   height: 50px;
-  background-color: #414141;
+  background-color: rgba(0,0,0,0.4);
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -736,7 +742,7 @@ input[type=checkbox]:disabled+label {
 /* .meter.meter-high (dubbel klass) för att slå Font Awesomes .fa-regel, som annars vinner på laddningsordning */
 .meter.meter-high {
   background-color: transparent;
-  color: #414141;
+  color: rgba(0,0,0,0.4);
   font-size: 50px;
   line-height: 50px;
 }
@@ -1012,4 +1018,202 @@ input.correct-answer {
   width: 320px;
   max-width: 80%;
   height: auto;
+}
+/* Faktorintervallen är avstängda när en multiplikationstabell är vald */
+.field-group input:disabled {
+  opacity: 0.4;
+}
+
+/* Helskärmen där maskoten flexar - ligger ovanpå allt utom popuperna och den vanliga emoji-bursten */
+.flex-screen {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5000;
+  background-color: var(--app-bg);
+  background-image: radial-gradient(ellipse at 50% 45%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.34) 100%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.flex-mascot {
+  font-size: min(45vw, 15em);
+  line-height: 1;
+  cursor: pointer;
+  filter: drop-shadow(8px 16px 8px rgba(0,0,0,0.45));
+  animation: flex-mascot-hover 3s ease-in-out infinite;
+  /* Över flex-burstens partiklar, så att de ser ut att komma fram bakom maskoten */
+  position: relative;
+  z-index: 2;
+}
+/* Flex-burstens partiklar läggs inuti flex-skärmen (inte i body) så att de kan hamna bakom maskoten */
+.flex-screen .emoji-burst-particle {
+  z-index: 1;
+}
+.flex-collection-button {
+  margin-left: auto;
+  font-size: 1.2em;
+}
+/* Studsen läggs på ett inre element så den inte krockar med svävningen ovan
+   (gäller både den stora flex-maskoten och den lilla maskoten nere i hörnet) */
+.flex-mascot-inner,
+.mascot-display-inner {
+  display: inline-block;
+}
+.flex-mascot-inner.bounce,
+.mascot-display-inner.bounce {
+  animation: flex-mascot-bounce 0.45s ease-out;
+}
+.flex-hint {
+  margin-top: 40px;
+  color: #3c3c3a;
+}
+
+@keyframes flex-mascot-hover {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(5deg);
+  }
+}
+
+@keyframes flex-mascot-bounce {
+  0% {
+    transform: scale(1, 1);
+  }
+  25% {
+    transform: scale(1.18, 0.85);
+  }
+  50% {
+    transform: scale(0.9, 1.12);
+  }
+  75% {
+    transform: scale(1.05, 0.96);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+.flex-screen .toolbar-fixed+div {
+  margin-top: 0;
+}
+
+/* Upplåsta prestationer i emojisamlingen */
+.achievement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+.achievement-item {
+  padding: 12px 16px;
+  background-color: #f7d046;
+  color: #3d2b00;
+  border-bottom: 3px solid #a07d10;
+  border-radius: 8px;
+  text-align: center;
+}
+.achievement-title {
+  font-size: 1.2em;
+}
+.achievement-requirement {
+  font-size: 0.75em;
+  opacity: 0.75;
+}
+
+/* Bakgrundsfärgväljaren under Prestationer */
+.background-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+.background-swatch-wrapper {
+  text-align: center;
+}
+.background-swatch {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid rgba(0,0,0,0.25);
+  cursor: pointer;
+  outline: 0;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+.background-swatch.selected {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 3px #3c3c3a, 0 3px 6px rgba(0,0,0,0.3);
+}
+.background-swatch-label {
+  margin-top: 5px;
+  font-size: 0.75em;
+  color: #3c3c3a;
+}
+
+/* Guld-bakgrundens metalliska mönster: borstad metall, ljusa och mörka band, små glimtar och
+   en mjuk glans som långsamt sveper förbi. Ligger i ::before/::after med z-index -1 så att det
+   hamnar ovanpå bakgrundsfärgen men under allt innehåll. Gäller både sidan och flex-skärmen. */
+:root[data-bg-pattern="gold"] body::before,
+:root[data-bg-pattern="gold"] body::after,
+:root[data-bg-pattern="gold"] .flex-screen::before,
+:root[data-bg-pattern="gold"] .flex-screen::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+:root[data-bg-pattern="gold"] body::before,
+:root[data-bg-pattern="gold"] .flex-screen::before,
+.background-swatch.bg-pattern-gold {
+  background-image:
+    /* små glimtar, i två förskjutna rutnät så de inte ser ut att ligga på rad */
+    radial-gradient(circle, rgba(255,250,220,0.55) 0, rgba(255,250,220,0) 1.5px),
+    radial-gradient(circle, rgba(255,250,220,0.35) 0, rgba(255,250,220,0) 1px),
+    /* borstad metall */
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 1px, rgba(255,255,255,0) 1px 5px),
+    /* breda ljusa och mörka band som ger metallkänslan */
+    linear-gradient(115deg,
+      rgba(255,240,190,0.30) 0%,
+      rgba(120,80,0,0.18) 22%,
+      rgba(255,240,190,0.35) 45%,
+      rgba(120,80,0,0.20) 68%,
+      rgba(255,240,190,0.28) 88%,
+      rgba(120,80,0,0.15) 100%);
+  background-size: 71px 71px, 113px 113px, auto, auto;
+  background-position: 0 0, 37px 59px, 0 0, 0 0;
+}
+:root[data-bg-pattern="gold"] body::after,
+:root[data-bg-pattern="gold"] .flex-screen::after {
+  background-image: linear-gradient(115deg, rgba(255,255,255,0) 40%, rgba(255,252,235,0.22) 50%, rgba(255,255,255,0) 60%);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  animation: gold-shine 9s ease-in-out infinite;
+}
+@keyframes gold-shine {
+  0% { background-position: 150% 0; }
+  45%, 100% { background-position: -50% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-bg-pattern="gold"] body::after,
+  :root[data-bg-pattern="gold"] .flex-screen::after {
+    animation: none;
+    display: none;
+  }
+}
+/* Den lilla rutan i färgväljaren har inte plats för glimtarnas fulla storlek */
+.background-swatch.bg-pattern-gold {
+  background-size: 17px 17px, 23px 23px, auto, auto;
+  background-position: 0 0, 8px 12px, 0 0, 0 0;
 }
