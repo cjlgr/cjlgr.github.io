@@ -14,6 +14,12 @@ var game = {
   currentAnswer: null,
   currentCorrectReward: null,
   wrongAttempts: 0,
+  // Talet som visas just nu ({mode, a, b}) - används för att spara fel i "Öva på fel"-listan
+  currentQ: null,
+  currentQRecorded: false,
+  mistakeMode: false,
+  lastMistakeKey: null,
+  mistakesCleared: false,
   streak: 0,
   xMode: false,
   showTraining: true,
@@ -719,6 +725,9 @@ var game = {
     }
     this.alarmStopped = true;
     this.contest = _mode === 'contest';
+    this.mistakeMode = _mode === 'mistakes' && this.getMistakeCount() > 0;
+    this.lastMistakeKey = null;
+    $('#mistakeCounter').toggle(this.mistakeMode);
     if (this.contest) {
       this.cEl.show();
       this.time = -1;
@@ -804,7 +813,7 @@ var game = {
     var qtxt = '';
     for (var i = 0; i < questions.length; i++) {
       qtxt += '<div class="test-question-text">' + questions[i].q.question + '</div>';
-      qtxt += '<input name="q'+i+'" type="number" data-type="test-input" data-answer="'+questions[i].a.answer+'" data-reward="'+questions[i].a.reward+'"><br><br>';
+      qtxt += '<input name="q'+i+'" type="number" data-type="test-input" data-answer="'+questions[i].a.answer+'" data-reward="'+questions[i].a.reward+'" data-mode="'+questions[i].q.mode+'" data-a="'+questions[i].q.tal1+'" data-b="'+questions[i].q.tal2+'"><br><br>';
     }
 
     qtxt += '<div style="height: 100px; margin-top: 50px; margin-bottom: 50px;"><button id="correctTest" class="btn-big btn-3d btn-3d-yellow">Kontrollera svar</button></div>';
@@ -850,9 +859,11 @@ var game = {
         pointsEarned += parseInt($(answer).attr('data-reward'), 10) || 10;
         // add 'correct-answer' class to input
         $(answer).addClass('correct-answer');
+        game.recordCorrect(game.getTestInputQuestion(answer));
       } else {
         // add 'wrong-answer' class to input
         $(answer).addClass('wrong-answer');
+        game.recordMistake(game.getTestInputQuestion(answer));
       }
       totalAnswers++;
     }
@@ -888,7 +899,11 @@ var game = {
     averageTimePerQuestion = Math.round(averageTimePerQuestion * 10) / 10;
 
     feedbacktxt += '<p>Snitt per rätt svar: <strong><span class="green-text">'+averageTimePerQuestion+'</span> s</strong></p>'; 
-    feedbacktxt += '<br><button style="margin-bottom: 100px;" id="newQuestion" class="btn-small-3d" onclick="game.startTest()">Nytt test</button>';
+    feedbacktxt += '<br><button id="newQuestion" class="btn-small-3d" onclick="game.startTest()">Nytt test</button>';
+    if (correctAnswers < totalAnswers && game.getMistakeCount() > 0) {
+      feedbacktxt += '<br><br><button class="btn-small-3d btn-3d-orange" onclick="game.startMistakePractice()">Öva på dina fel</button>';
+    }
+    feedbacktxt += '<div style="height: 100px;"></div>';
     feedbacktxt += '</div>';
 
     this.updateTestFeedbackText(feedbacktxt);
@@ -1007,6 +1022,7 @@ var game = {
     if (this.time === -1) {
       setTimeout(function(){
         $('#answerButton').attr('disabled', true);
+        this.recordCurrentMistake();
         this.onWrongAnswer('<h3>Tiden är slut!</h3><p>Det rätta svaret är '+this.currentAnswer+'</p> <button class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button>');
       }.bind(this), 1000);
     }
@@ -1023,7 +1039,12 @@ var game = {
     var q;
     this.clearEmojiBurstParticles();
     this.wrongAttempts = 0;
-    if (this.xMode) {
+    this.currentQRecorded = false;
+    this.mistakesCleared = false;
+    if (this.mistakeMode) {
+      q = this.createMistakeQuestion();
+      this.updateMistakeCounter();
+    } else if (this.xMode) {
       q = this.createXQuestion();
     } else {
       q = this.createQuestion();
@@ -1122,7 +1143,9 @@ var game = {
       this.updateHelp('');
     }
 
-    
+    // X-frågan sparas som det vanliga talet (7 × A = 56 -> 7 × 8) - det är samma kunskap som saknas
+    this.currentQ = { mode: this.mode, a: tal1, b: tal2 };
+
     var xReward = this.getNarrowRangeReward(answer, min, max);
 
     if (orderOfX === 0) {
@@ -1218,6 +1241,7 @@ var game = {
 
     this.currentAnswer = answer;
     this.currentCorrectReward = this.getNarrowRangeReward(answer, min, max, minb, maxb);
+    this.currentQ = { mode: this.mode, a: tal1, b: tal2 };
 
 
     q = {
@@ -1299,6 +1323,7 @@ var game = {
 
     ret = {
       q: {
+        mode: this.mode,
         tal1: tal1,
         char: char,
         tal2: tal2,
@@ -1384,6 +1409,9 @@ var game = {
 
     return {
       q: {
+        mode: this.mode,
+        tal1: tal1,
+        tal2: tal2,
         question: questionText
       },
       a: {
@@ -1452,6 +1480,7 @@ var game = {
       html += '<span style="white-space: nowrap"><strong class="contest-label">Tävling:</strong> <span class="contest-score-label">'+contestscore+'&nbsp;<i class="fa fa-trophy" style="color: '+contestTrophyColor+';" aria-hidden="true"></i></span></span>';
     }
     this.msEl.html(html);
+    this.updateMistakeButton();
   },
   updateHelp: function(html) {
     this.hEl.html(html);
@@ -1614,6 +1643,168 @@ var game = {
     }
   },
 
+  // "Öva på fel": tal man svarat fel på sparas i localStorage (under 'mistakes') med sina faktiska
+  // siffror. 7 × 8 och 8 × 7 är olika tal. Ett tal försvinner ur listan efter två rätt i rad på
+  // första försöket - i vilket läge som helst, inte bara i "Öva på fel" (1 rätt räcker för gamla fel).
+  mistakeCharByMode: { plus: '+', minus: '-', multi: '×' },
+  mistakeRightToClear: 2,
+  // Ett fel vars senaste miss är äldre än så här räcker det med 1 rätt för - en snabbkoll om det sitter nu
+  mistakeOldAfterMs: 30 * 24 * 60 * 60 * 1000,
+  // Tak på listan så att den aldrig blir överväldigande - de äldsta missarna trillar ut först
+  mistakeMaxCount: 30,
+
+  getMistakes: function(){
+    try {
+      return JSON.parse(localStorage.getItem('mistakes')) || {};
+    } catch (e) {
+      return {};
+    }
+  },
+
+  saveMistakes: function(mistakes){
+    localStorage.setItem('mistakes', JSON.stringify(mistakes));
+  },
+
+  getMistakeKey: function(q){
+    return q.mode + ':' + q.a + ':' + q.b;
+  },
+
+  getMistakeCount: function(){
+    return Object.keys(game.getMistakes()).length;
+  },
+
+  isValidMistakeQuestion: function(q){
+    return !!(q && game.mistakeCharByMode[q.mode] && !isNaN(q.a) && !isNaN(q.b));
+  },
+
+  recordMistake: function(q){
+    if (!game.isValidMistakeQuestion(q)) {
+      return;
+    }
+    var mistakes = game.getMistakes();
+    var key = game.getMistakeKey(q);
+    var entry = mistakes[key] || { mode: q.mode, a: q.a, b: q.b, wrong: 0 };
+    entry.wrong++;
+    entry.rightInRow = 0;
+    entry.lastWrong = Date.now();
+    mistakes[key] = entry;
+    var keys = Object.keys(mistakes);
+    if (keys.length > game.mistakeMaxCount) {
+      keys.sort(function(k1, k2){ return (mistakes[k1].lastWrong || 0) - (mistakes[k2].lastWrong || 0); });
+      keys.slice(0, keys.length - game.mistakeMaxCount).forEach(function(k){ delete mistakes[k]; });
+    }
+    game.saveMistakes(mistakes);
+  },
+
+  // Sparar den aktuella frågan som fel - bara en gång per fråga, hur många gånger man än gissar fel
+  recordCurrentMistake: function(){
+    if (this.currentQRecorded) {
+      return;
+    }
+    this.currentQRecorded = true;
+    this.recordMistake(this.currentQ);
+  },
+
+  // Returnerar true om talet just blev klart och togs bort ur listan
+  recordCorrect: function(q){
+    if (!game.isValidMistakeQuestion(q)) {
+      return false;
+    }
+    var mistakes = game.getMistakes();
+    var key = game.getMistakeKey(q);
+    var entry = mistakes[key];
+    if (!entry) {
+      return false;
+    }
+    entry.rightInRow = (entry.rightInRow || 0) + 1;
+    var isOld = Date.now() - (entry.lastWrong || 0) > game.mistakeOldAfterMs;
+    var cleared = isOld || entry.rightInRow >= game.mistakeRightToClear;
+    if (cleared) {
+      delete mistakes[key];
+    }
+    game.saveMistakes(mistakes);
+    return cleared;
+  },
+
+  getTestInputQuestion: function(input){
+    return {
+      mode: $(input).attr('data-mode'),
+      a: parseInt($(input).attr('data-a'), 10),
+      b: parseInt($(input).attr('data-b'), 10)
+    };
+  },
+
+  // Tal med många fel kommer oftare. Samma tal kommer aldrig två gånger i rad (om det finns fler).
+  pickMistake: function(){
+    var mistakes = game.getMistakes();
+    var keys = Object.keys(mistakes);
+    if (keys.length > 1 && game.lastMistakeKey) {
+      keys = keys.filter(function(k){ return k !== game.lastMistakeKey; });
+    }
+    var total = 0;
+    keys.forEach(function(k){ total += mistakes[k].wrong || 1; });
+    var r = Math.random() * total;
+    for (var i = 0; i < keys.length; i++) {
+      r -= mistakes[keys[i]].wrong || 1;
+      if (r < 0) {
+        game.lastMistakeKey = keys[i];
+        return mistakes[keys[i]];
+      }
+    }
+    game.lastMistakeKey = keys[keys.length - 1];
+    return mistakes[game.lastMistakeKey];
+  },
+
+  createMistakeQuestion: function(){
+    var entry = this.pickMistake();
+    var tal1 = entry.a, tal2 = entry.b, answer;
+    this.mode = entry.mode;
+
+    if (this.mode === 'plus') {
+      answer = tal1 + tal2;
+    } else if (this.mode === 'minus') {
+      answer = tal1 - tal2;
+    } else {
+      answer = tal1 * tal2;
+    }
+
+    if (this.mode === 'multi' && !game.hideVisualHelp && tal1 !== 0 && tal2 !== 0 && tal1 <= 10 && tal2 <= 10) {
+      this.updateHelp(this.getHelpUnits(tal1, tal2));
+    } else {
+      this.updateHelp('');
+    }
+
+    this.currentAnswer = answer;
+    this.currentCorrectReward = answer;
+    this.currentQ = { mode: entry.mode, a: tal1, b: tal2 };
+
+    return {
+      question: 'Vad blir ' + tal1 + ' ' + this.mistakeCharByMode[this.mode] + ' ' + tal2 + '?'
+    };
+  },
+
+  updateMistakeCounter: function(){
+    var count = this.getMistakeCount();
+    $('#mistakeCounter').text(count === 0 ? 'Inga tal kvar!' : count + ' tal kvar att öva på');
+  },
+
+  // Menyknappen syns bara när det finns fel att öva på
+  updateMistakeButton: function(){
+    var count = this.getMistakeCount();
+    $('#mistakeButtonCount').text(count);
+    $('#mistakeButton').toggle(count > 0);
+    $('#clearMistakesCount').text(count);
+    $('#clearMistakes').attr('disabled', count === 0);
+  },
+
+  startMistakePractice: function(){
+    game.stopGameTime();
+    game.tEl.hide();
+    game.mEl.hide();
+    game.el.show();
+    game.startGame('mistakes');
+  },
+
   // Prestationer: låses upp en gång för alltid och sparas i localStorage. De påverkas inte av
   // "Nollställ poäng". Hittills bara streak-baserade (streak = antal rätt i rad under ett pass).
   // Prestationer med color låser upp en ny bakgrundsfärg - de läggs till automatiskt för var
@@ -1624,6 +1815,12 @@ var game = {
       streak: 30,
       title: '💪 Flexa',
       description: 'Du klarade 30 rätt i rad! Nu kan du flexa med din maskot - tryck på den så kommer du till flex-skärmen.'
+    },
+    {
+      id: 'mistakefixer',
+      title: '🔧 Felfixaren',
+      requirement: 'Övade bort alla fel',
+      description: 'Du har övat bort alla tal du gjort fel på. Snyggt jobbat!'
     }
   ],
 
@@ -1654,6 +1851,25 @@ var game = {
       return;
     }
     localStorage.setItem('achievements', JSON.stringify(unlocked));
+    game.showAchievementPopup(newlyUnlocked);
+  },
+
+  // Prestationer som inte bygger på streak låses upp direkt via sitt id (bara första gången)
+  unlockAchievement: function(id){
+    var unlocked = game.getUnlockedAchievements();
+    if (unlocked[id]) {
+      return;
+    }
+    var achievement = game.achievements.filter(function(a){ return a.id === id; })[0];
+    if (!achievement) {
+      return;
+    }
+    unlocked[id] = true;
+    localStorage.setItem('achievements', JSON.stringify(unlocked));
+    game.showAchievementPopup([achievement]);
+  },
+
+  showAchievementPopup: function(newlyUnlocked){
     game.renderMascotDisplay();
 
     var html = '';
@@ -1679,7 +1895,7 @@ var game = {
       if (unlocked[achievement.id]) {
         html += '<div class="achievement-item" data-achievement="' + achievement.id + '">' +
           '<div class="achievement-title">' + achievement.title + '</div>' +
-          '<div class="achievement-requirement">' + achievement.streak + ' rätt i rad</div>' +
+          '<div class="achievement-requirement">' + (achievement.requirement || achievement.streak + ' rätt i rad') + '</div>' +
           '</div>';
       }
     }
@@ -2007,7 +2223,15 @@ var game = {
       feedbacktxt += '<br><h4>Total poäng: <strong>'+totalscore+'</strong></h4><br>';
     }
     feedbacktxt += '</div>';
-    feedbacktxt += '<div class="box"><br><button id="newQuestion" class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button></div>';
+    if (this.mistakesCleared) {
+      feedbacktxt += '<div class="box green-box"><h3>Alla fel fixade! 🎉</h3>Du har övat bort alla tal du gjort fel på.</div>';
+      feedbacktxt += '<div class="box"><br><button id="newQuestion" class="btn-small-3d" onclick="$(\'#back\').click()">Tillbaka</button></div>';
+    } else {
+      feedbacktxt += '<div class="box"><br><button id="newQuestion" class="btn-small-3d" onclick="game.createNewQuestion()">Ny fråga</button></div>';
+    }
+    if (this.mistakeMode) {
+      this.updateMistakeCounter();
+    }
 
     this.updateHelp('');
     this.updateFeedbackText(feedbacktxt);
@@ -2023,6 +2247,12 @@ var game = {
 
     // Efter emoji-popupen, så att prestations-popupen hamnar överst om båda dyker upp samtidigt
     this.checkStreakAchievements();
+
+    if (this.mistakesCleared) {
+      this.streakFirework();
+      this.emojiBurst(this.getUnlockedEmojiPool(this.score), this.getRandomInt(25, 40));
+      this.unlockAchievement('mistakefixer');
+    }
 
   },
 
@@ -2473,6 +2703,15 @@ $(document).ready(function() {
     game.mEl.show();
   })
   
+  $('#clearMistakes').on('click', function(e){
+    e.preventDefault();
+    if (!window.confirm('Är du säker? Alla tal du gjort fel på tas bort från "Öva på fel".')) {
+      return;
+    }
+    localStorage.removeItem('mistakes');
+    game.updateMistakeButton();
+  });
+
   var clearSettingsButton = $('#clearSettings');
   clearSettingsButton.on('click', function(e){
     e.preventDefault();
@@ -2589,6 +2828,11 @@ $(document).ready(function() {
   })
 
 
+  $('#mistakeButton').on('click', function(e){
+    e.preventDefault();
+    game.startMistakePractice();
+  });
+
   var contestButton = $('#contestButton');
   contestButton.on('click', function(e){
     e.preventDefault();
@@ -2689,10 +2933,15 @@ $(document).ready(function() {
       answer = parseInt(answer, 10);
 
       if (answer === game.currentAnswer) {
+        // Bara rätt på första försöket räknas mot att bli av med ett tal i fellistan
+        if (game.wrongAttempts === 0) {
+          game.mistakesCleared = game.recordCorrect(game.currentQ) && game.mistakeMode && game.getMistakeCount() === 0;
+        }
         game.onCorrectAnswer();
 
       } else {
         game.wrongAttempts++;
+        game.recordCurrentMistake();
         game.onWrongAnswer();
       }
     }

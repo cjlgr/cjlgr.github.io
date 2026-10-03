@@ -182,6 +182,29 @@ button.btn-3d-yellow:active:not([disabled]) {
 }
 
 
+button.btn-3d-orange {
+  background-color: #ffc98a;
+  border-bottom: 10px solid #e8893a;
+}
+button.btn-3d-orange:hover:not([disabled]) {
+  background-color: #ffdab0;
+  border-bottom: 10px solid #f09d57;
+}
+button.btn-3d-orange:active:not([disabled]) {
+  background-color: #ffdab0;
+  border-bottom: 2px solid #f09d57;
+}
+
+.mistake-counter {
+  text-align: center;
+  margin: 5px 0 12px;
+  padding: 5px 12px;
+  border-radius: 1000px;
+  background-color: #ffc98a;
+  color: #6b3a00;
+  font-weight: bold;
+}
+
 button.btn-big {
   display: block;
   line-height: 2em;
