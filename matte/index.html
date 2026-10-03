@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#757571">
 
   <link rel="apple-touch-icon" sizes="180x180" href="gfx/icon.png">
-  <link href="style/master.css?v=62" rel="stylesheet" type="text/css">
+  <link href="style/master.css?v=64" rel="stylesheet" type="text/css">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +17,10 @@
   <script
   src="https://code.jquery.com/jquery-3.2.1.js"
   integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+  crossorigin="anonymous"></script>
+  <script
+  src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+  integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU"
   crossorigin="anonymous"></script>
 </head>
 <body>
@@ -31,6 +35,7 @@
     <button class="btn-transparent settings-button" id="collectionButton"><i class="fa fa-smile-o"></i></button>
     <button class="btn-transparent settings-button" id="teacherButton"><i class="fa fa-graduation-cap"></i></button>
     <button class="btn-transparent settings-button" id="settingsButton"><i class="fa fa-cog"></i></button>
+    <button class="btn-transparent settings-button" id="shareButton"><i class="fa fa-share-alt"></i></button>
     <img src="gfx/logo-horizontal.png" alt="Räknix" class="menu-logo">
     <div style="margin-top: 75px; margin-bottom: 25px;">
       <div class="text-center"><input id="checkAdd" type="checkbox" checked><label for="checkAdd"><i class="fa fa-check-circle"></i><i class="fa fa-circle"></i> Plus (addition)</label></div>
@@ -166,6 +171,7 @@
       <button id="clearMistakes" class="btn-danger btn-small-3d">Nollställ mina fel (<span id="clearMistakesCount">0</span>)</button>
     </div>
 
+
     <div class="field-group" style="margin-top: 60px; margin-bottom: 60px;">
       <p style="text-align: center;font-size: 0.8em;">Version 1.4.0 <i id="reloadAppButton" class="fa fa-refresh" style="cursor:pointer; color:#3c3c3a;" title="Uppdatera appen"></i></p>
       <p style="text-align: center;font-size: 0.8em;"><a href="mailto:carljohanelger@gmail.com" style="color: #3c3c3a;">Kontakt</a></p>
@@ -173,6 +179,15 @@
 
   </div>
 
+  <div id="share">
+    <button class="btn-transparent" id="shareclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
+    <h3 class="text-center">Dela Räknix</h3>
+    <p class="text-center" style="color: #3c3c3a">Skanna QR-koden för att öppna spelet</p>
+    <div class="text-center">
+      <div id="gameQr" class="qr-box"></div>
+    </div>
+    <p class="text-center" style="color: #3c3c3a; margin-top: 20px; word-break: break-all;" id="gameUrlText"></p>
+  </div>
   <div id="teacher">
     <button class="btn-transparent" id="teacherclose"><i class="fa fa-arrow-left"></i> Tillbaka</button><br><br>
 
@@ -319,12 +334,16 @@
         <div class="field-group" style="margin-top: 10px;">
           <button id="copyStudentLink" class="btn-default btn-small-3d">Kopiera länk</button>
         </div>
+        <div class="text-center" style="margin-top: 20px;">
+          <div id="studentQr" class="qr-box"></div>
+        </div>
       </div>
     </div>
 
     <div class="field-group" style="margin-top: 50px;">
       <button id="teacherClearSettings" class="btn-danger btn-small-3d">Återställ till standardvärden</button>
     </div>
+
 
     <div class="field-group" style="margin-top: 60px; margin-bottom: 60px;">
       <p style="text-align: center;font-size: 0.8em;">Version 1.4.0 <i id="t-reloadAppButton" class="fa fa-refresh" style="cursor:pointer; color:#3c3c3a;" title="Uppdatera appen"></i></p>
@@ -442,7 +461,7 @@
 
   </div>
 
-  <script src="script/script.js?v=102"></script>
+  <script src="script/script.js?v=105"></script>
 
 </body>
 </html>

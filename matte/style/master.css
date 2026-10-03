@@ -415,6 +415,10 @@ button.btn-transparent:hover {
   display: none;
 }
 
+#share {
+  display: none;
+}
+
 #emojiCollection {
   display: none;
 }
@@ -1239,4 +1243,16 @@ input.correct-answer {
 .background-swatch.bg-pattern-gold {
   background-size: 17px 17px, 23px 23px, auto, auto;
   background-position: 0 0, 8px 12px, 0 0, 0 0;
+}
+
+.qr-box {
+  display: inline-block;
+  padding: 12px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0px 5px 4px 0px rgba(0,0,0,0.2);
+}
+.qr-box img,
+.qr-box canvas {
+  display: block;
 }

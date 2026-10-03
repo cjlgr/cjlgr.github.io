@@ -3,6 +3,7 @@ var game = {
   qEl: $('#questionText'),
   mEl: $('#menu'),
   setEl: $('#settings'),
+  shareEl: $('#share'),
   teacherEl: $('#teacher'),
   fEl: $('#feedback'),
   tfEl: $('#testfeedback'),
@@ -168,10 +169,10 @@ var game = {
     return game.getUrlParam('t') === 'y';
   },
 
-  // Placerar de synliga ikonerna (kugghjul/mössa/leende) tätt intill varandra uppe till höger,
+  // Placerar de synliga ikonerna (kugghjul/mössa/dela/leende) tätt intill varandra uppe till höger,
   // istället för att lämna tomma luckor efter dolda ikoner.
   layoutMenuIcons: function(){
-    var order = ['#settingsButton', '#teacherButton', '#collectionButton'];
+    var order = ['#settingsButton', '#teacherButton', '#shareButton', '#collectionButton'];
     var slot = 0;
     for (var i = 0; i < order.length; i++) {
       if ($(order[i]).is(':visible')) {
@@ -1805,6 +1806,16 @@ var game = {
     game.startGame('mistakes');
   },
 
+  // QR-koder ritas lokalt i webbläsaren (qrcodejs från cdnjs) - länken skickas aldrig till någon tjänst
+  renderQr: function(el, text){
+    $(el).empty();
+    if (typeof QRCode === 'undefined') {
+      $(el).closest('.qr-box').hide();
+      return;
+    }
+    new QRCode(el, { text: text, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+  },
+
   // Prestationer: låses upp en gång för alltid och sparas i localStorage. De påverkas inte av
   // "Nollställ poäng". Hittills bara streak-baserade (streak = antal rätt i rad under ett pass).
   // Prestationer med color låser upp en ny bakgrundsfärg - de läggs till automatiskt för var
@@ -2509,9 +2520,11 @@ $(document).ready(function() {
   // Emojisamlingen (leendet) är alltid synlig - det är bara en vy av ens egna poäng/emojis.
   var hasStudentLink = !!game.getUrlParam('s');
   var teacherMode = game.isTeacher();
+  // Dela-ikonen döljs också för elevlänkar - annars kan en elev dela en länk utan lärarens inställningar.
   if (hasStudentLink) {
     $('#settingsButton').hide();
     $('#teacherButton').hide();
+    $('#shareButton').hide();
   } else if (teacherMode) {
     $('#settingsButton').hide();
     $('#teacherButton').show();
@@ -2664,6 +2677,25 @@ $(document).ready(function() {
     var link = window.location.origin + window.location.pathname + '?s=' + encodedCode;
     $('#studentLinkText').val(link);
     $('#studentLinkWrapper').show();
+    game.renderQr(document.getElementById('studentQr'), link);
+  });
+
+  // Spelets egen länk, utan parametrar - så att den som skannar får en vanlig Räknix
+  // Dela-skärmen: spelets egen länk, utan parametrar - så att den som skannar får en vanlig Räknix
+  var gameUrl = window.location.origin + window.location.pathname;
+  game.renderQr(document.getElementById('gameQr'), gameUrl);
+  $('#gameUrlText').text(gameUrl);
+
+  $('#shareButton').on('click', function(e){
+    e.preventDefault();
+    game.mEl.hide();
+    game.shareEl.show();
+  });
+
+  $('#shareclose').on('click', function(e){
+    e.preventDefault();
+    game.shareEl.hide();
+    game.mEl.show();
   });
 
   var copyStudentLinkButton = $('#copyStudentLink');
@@ -2747,7 +2779,7 @@ $(document).ready(function() {
   game.viewBeforeCollection = null;
 
   var openEmojiCollection = function(){
-    var views = [game.mEl, game.el, game.tEl, game.setEl, game.teacherEl];
+    var views = [game.mEl, game.el, game.tEl, game.setEl, game.shareEl, game.teacherEl];
     game.viewBeforeCollection = null;
     for (var i = 0; i < views.length; i++) {
       if (views[i].is(':visible')) {
