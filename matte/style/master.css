@@ -473,7 +473,9 @@ button.btn-transparent:hover {
 
 .emoji-collection-final-row {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   margin-top: 12px;
 }
 .emoji-collection-item.final {
@@ -896,6 +898,9 @@ input.correct-answer {
   justify-content: center;
 }
 .test-info-popup-box {
+  /* Ovanför ev. burst-partiklar som skjuts ut inifrån popupen (se legendaryCelebration) */
+  position: relative;
+  z-index: 2;
   max-width: 300px;
   width: 100%;
   box-sizing: border-box;
@@ -1080,6 +1085,9 @@ input.correct-answer {
   z-index: 2;
 }
 /* Flex-burstens partiklar läggs inuti flex-skärmen (inte i body) så att de kan hamna bakom maskoten */
+.test-info-popup .emoji-burst-particle {
+  z-index: 1;
+}
 .flex-screen .emoji-burst-particle {
   z-index: 1;
 }
@@ -1255,4 +1263,67 @@ input.correct-answer {
 .qr-box img,
 .qr-box canvas {
   display: block;
+}
+
+/* Legendariska emojis (100 000 poäng): guldglöd i samlingen, på maskoten och i upplåsningspopupen */
+.emoji-collection-item.legendary {
+  background: radial-gradient(circle, #fff6c2 0%, #ffd34d 55%, #e0a800 100%);
+  box-shadow: 0 0 12px 3px rgba(255, 210, 60, 0.85);
+  animation: legendary-glow 2.2s ease-in-out infinite;
+}
+.emoji-collection-item.legendary.locked {
+  background: #5c5b5b;
+  box-shadow: 0 0 8px 1px rgba(255, 210, 60, 0.5);
+  border: 2px solid #e0a800;
+  animation: none;
+}
+#mascotDisplay.legendary .mascot-display-inner {
+  filter: drop-shadow(0 0 10px rgba(255, 210, 60, 0.95));
+}
+@keyframes legendary-glow {
+  0%, 100% { box-shadow: 0 0 10px 2px rgba(255, 210, 60, 0.7); }
+  50% { box-shadow: 0 0 22px 7px rgba(255, 225, 90, 1); }
+}
+
+.test-info-popup-box.legendary {
+  background: linear-gradient(160deg, #fff3b0 0%, #ffd34d 45%, #e0a800 100%);
+  border-bottom-color: #a87b00;
+  color: #4a3500;
+  box-shadow: 0 0 30px 8px rgba(255, 210, 60, 0.8);
+}
+.test-info-popup-box.legendary h3 {
+  color: #6b4c00;
+  letter-spacing: 1px;
+}
+.legendary-emoji {
+  display: block;
+  font-size: 3.5em;
+  line-height: 1.2;
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.9));
+  animation: legendary-pop 0.8s ease-out, legendary-float 2.5s ease-in-out 0.8s infinite;
+}
+.legendary-title {
+  display: block;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+.legendary-text {
+  display: block;
+  font-size: 0.45em;
+  margin-top: 10px;
+}
+@keyframes legendary-pop {
+  0% { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+  70% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes legendary-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .emoji-collection-item.legendary,
+  .legendary-emoji {
+    animation: none;
+  }
 }

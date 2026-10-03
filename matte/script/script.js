@@ -918,11 +918,7 @@ var game = {
       game.emojiBurst(ownedPool, game.getRandomInt(25, 40));
     }
 
-    if (newlyUnlockedEmojis.length > 0) {
-      $('#emojiUnlockList').text(newlyUnlockedEmojis.join(' '));
-      $('#emojiUnlockPopup').css('display', 'flex');
-      $('#emojiUnlockClose').focus();
-    }
+    game.showEmojiUnlock(newlyUnlockedEmojis);
   },
 
   getRandomInt: function (min, max) {
@@ -1489,14 +1485,14 @@ var game = {
 
   // Tumme upp och hjärta är alltid med. Nästa par emojis låses upp vid respektive poäng i
   // emojiTierThresholds - trösklarna växer exponentiellt (tätt i början, långt mellan i toppen,
-  // ~60000 poäng för att låsa upp allt) så det inte tar en evighet att komma igång men känns
+  // ~60000 poäng, plus en sista legendarisk emoji vid 100000) så det inte tar en evighet att komma igång men känns
   // som en riktig bedrift att nå toppen. Träning och Tävling har varsin egen samling.
   standardEmojis: ['👍', '❤️'],
   emojiTierThresholds: [
     0, 100, 200, 300, 400, 500, 600, 700, 800, 1130,
     1330, 1570, 1850, 2190, 2580, 3050, 3600, 4240, 5010, 5910,
     6970, 8230, 9710, 11460, 13520, 15950, 18830, 22220, 26220, 30940,
-    36510, 43090, 50840, 60000
+    36510, 43090, 50840, 60000, 100000
   ],
   emojiTierEmojisByMode: {
     training: [
@@ -1506,7 +1502,7 @@ var game = {
       ['🍦', '🍨'], ['🦕', '🦖'], ['🍪', '🍩'], ['🐺', '🦁'], ['🦄', '🐉'],
       ['🌊', '🌋'], ['🦑', '🦋'], ['🌯', '🍜'], ['🪐', '🚀'], ['🐢', '🦎'],
       ['🐨', '🐸'], ['🍬', '🍫'], ['🐻', '🐼'], ['🐧', '🦉'], ['🦊', '🐵'],
-      ['🐝', '🐞'], ['🌈', '⚡'], ['🐊', '🦂'], ['💎', '👑']
+      ['🐝', '🐞'], ['🌈', '⚡'], ['🐊', '🦂'], ['💎', '👑'], ['🧠']
     ],
     contest: [
       ['🔥', '💪'], ['🥳', '👏'], ['⚡', '✨'], ['🏈', '⚾'], ['🎇', '🌟'],
@@ -1515,8 +1511,65 @@ var game = {
       ['🎳', '🏹'], ['🚩', '🎆'], ['🥍', '🏏'], ['🤼', '🤹'], ['🤺', '🥊'],
       ['🏎️', '🏍️'], ['🏓', '🏸'], ['🥈', '🥉'], ['🚗', '🚁'], ['🥋', '🏋️'],
       ['🏄', '🏊'], ['⚔️', '🛡️'], ['🧗', '🪂'], ['💫', '🦸'], ['🦹', '🥷'],
-      ['⚽', '🏀'], ['🎯', '🛼'], ['🚵', '🏇'], ['🏁', '🏆']
+      ['⚽', '🏀'], ['🎯', '🛼'], ['🚵', '🏇'], ['🏁', '🏆'], ['🐐']
     ]
+  },
+
+  // Sista tiern (100 000 poäng) har bara en enda, legendarisk emoji per läge - den får guldglöd
+  // i samlingen och ett eget, större upplåsningsögonblick (se showEmojiUnlock)
+  legendaryEmojis: {
+    '🧠': { title: 'Mattehjärnan', text: 'Du har nått <strong>100 000 poäng</strong> i Träning. Din hjärna är en riktig räknemaskin!' },
+    '🐐': { title: 'GOAT', text: 'Greatest Of All Time! Du har nått <strong>100 000 poäng</strong> i Tävling.' }
+  },
+
+  isLegendaryEmoji: function(emoji){
+    return !!game.legendaryEmojis[emoji];
+  },
+
+  // Visar popupen för nyss upplåsta emojis - den legendariska får en egen guldversion med extra firande
+  showEmojiUnlock: function(newlyUnlockedEmojis){
+    if (newlyUnlockedEmojis.length === 0) {
+      return;
+    }
+    var legendary = newlyUnlockedEmojis.filter(game.isLegendaryEmoji)[0];
+    var popupBox = $('#emojiUnlockPopup .test-info-popup-box');
+    if (legendary) {
+      var info = game.legendaryEmojis[legendary];
+      popupBox.addClass('legendary');
+      $('#emojiUnlockTitle').text('LEGENDARISK EMOJI!');
+      $('#emojiUnlockList').html('<span class="legendary-emoji">' + legendary + '</span>' +
+        '<span class="legendary-title">' + info.title + '</span>' +
+        '<span class="legendary-text">' + info.text + '</span>');
+      game.legendaryCelebration(legendary);
+    } else {
+      popupBox.removeClass('legendary');
+      $('#emojiUnlockTitle').text('Du låste upp nya emojis!');
+      $('#emojiUnlockList').text(newlyUnlockedEmojis.join(' '));
+    }
+    $('#emojiUnlockPopup').css('display', 'flex');
+    // Flytta fokus till popupens egen knapp, annars träffar Enter "Ny fråga" som ligger dold bakom
+    $('#emojiUnlockClose').focus();
+  },
+
+  // Den legendariska emojin (blandad med gnistor) skjuts ut åt alla håll inifrån popupen, bakom
+  // rutan men ovanpå den suddiga bakgrunden - så att den syns skarpt medan man läser. Fortsätter i
+  // vågor så länge popupen är öppen (max ca 15 sekunder).
+  legendaryCelebration: function(emoji){
+    var pool = [emoji, emoji, emoji, '✨', '⭐', '🌟'];
+    var popup = document.getElementById('emojiUnlockPopup');
+    var wave = 0;
+    var fire = function(){
+      if (!$(popup).is(':visible') || wave >= 15) {
+        return;
+      }
+      var rect = popup.querySelector('.test-info-popup-box').getBoundingClientRect();
+      game.radialBurst(popup, rect.left + rect.width / 2, rect.top + rect.height / 2,
+        pool, game.getRandomInt(18, 26), 10, 90, 1.1, { halfWidth: rect.width / 2, halfHeight: rect.height / 2 });
+      wave++;
+      setTimeout(fire, 1000);
+    };
+    // Vänta tills popupen faktiskt visas (den görs synlig direkt efter detta anrop)
+    setTimeout(fire, 0);
   },
 
   // Träning och Tävling har varsin emoji-samling, kopplad till respektive läges poäng
@@ -1576,19 +1629,24 @@ var game = {
   },
 
   // Bygger rutnätet av upplåsta (och kommande, låsta) emojis för en poängsumma
-  // Den allra sista tierns andra emoji är samlingens stora final och visas separat
-  // (se buildFinalEmojiHtml) - resten av rutnätet byggs här.
+  // Sista emojin i var och en av de sista tierna (👑/🏆 och den legendariska 🧠/🐐) är samlingens
+  // stora finaler och visas på egna rader (se buildFinalEmojiHtml) - resten av rutnätet byggs här.
+  emojiFinaleTierCount: 2,
+
+  isFinaleTier: function(tiers, index){
+    return index >= tiers.length - game.emojiFinaleTierCount;
+  },
+
   buildEmojiCollectionHtml: function(tiers, score){
     var html = '';
     var mascot = game.getMascot();
-    var lastIndex = tiers.length - 1;
     for (var i = 0; i < game.standardEmojis.length; i++) {
       html += game.buildMascotCell(game.standardEmojis[i], mascot);
     }
     for (var i = 0; i < tiers.length; i++) {
       var threshold = game.emojiTierThresholds[i];
       var unlocked = score >= threshold;
-      var emojisInTier = (i === lastIndex) ? [tiers[i][0]] : tiers[i];
+      var emojisInTier = game.isFinaleTier(tiers, i) ? tiers[i].slice(0, -1) : tiers[i];
       for (var j = 0; j < emojisInTier.length; j++) {
         if (unlocked) {
           html += game.buildMascotCell(emojisInTier[j], mascot);
@@ -1600,21 +1658,27 @@ var game = {
     return html;
   },
 
-  // Bygger den extra stora, centrerade finalrutan med samlingens sista, mest exklusiva emoji
+  // Bygger de extra stora, centrerade finalrutorna - en egen rad per final-tier
   buildFinalEmojiHtml: function(tiers, score){
-    var lastIndex = tiers.length - 1;
-    var threshold = game.emojiTierThresholds[lastIndex];
-    var finalEmoji = tiers[lastIndex][1];
-    if (score >= threshold) {
-      return game.buildMascotCell(finalEmoji, game.getMascot(), true);
+    var html = '';
+    for (var i = tiers.length - game.emojiFinaleTierCount; i < tiers.length; i++) {
+      var threshold = game.emojiTierThresholds[i];
+      var finalEmoji = tiers[i][tiers[i].length - 1];
+      if (score >= threshold) {
+        html += game.buildMascotCell(finalEmoji, game.getMascot(), true);
+      } else {
+        var legendaryClass = game.isLegendaryEmoji(finalEmoji) ? ' legendary' : '';
+        html += '<div class="emoji-collection-item locked final' + legendaryClass + '"><i class="fa fa-lock"></i><span class="emoji-collection-threshold">' + threshold + '</span></div>';
+      }
     }
-    return '<div class="emoji-collection-item locked final"><i class="fa fa-lock"></i><span class="emoji-collection-threshold">' + threshold + '</span></div>';
+    return html;
   },
 
   buildMascotCell: function(emoji, mascot, big){
     var selectedClass = (emoji === mascot) ? ' selected' : '';
     var bigClass = big ? ' final' : '';
-    return '<div class="emoji-collection-item unlocked' + selectedClass + bigClass + '" data-emoji="' + emoji + '">' + emoji + '</div>';
+    var legendaryClass = game.isLegendaryEmoji(emoji) ? ' legendary' : '';
+    return '<div class="emoji-collection-item unlocked' + selectedClass + bigClass + legendaryClass + '" data-emoji="' + emoji + '">' + emoji + '</div>';
   },
 
   // Maskoten är en av elevens upplåsta emojis, sparad lokalt, som visas svävande i hörnet
@@ -1639,6 +1703,7 @@ var game = {
     if (mascot && !flexing) {
       // Inre span så att studsen (se bounceMascot) inte krockar med maskotens svävning
       $('#mascotDisplay').html('<span class="mascot-display-inner">' + mascot + '</span>').show();
+      $('#mascotDisplay').toggleClass('legendary', game.isLegendaryEmoji(mascot));
     } else {
       $('#mascotDisplay').hide();
     }
@@ -1823,9 +1888,9 @@ var game = {
   achievements: [
     {
       id: 'flex',
-      streak: 30,
+      streak: 50,
       title: '💪 Flexa',
-      description: 'Du klarade 30 rätt i rad! Nu kan du flexa med din maskot - tryck på den så kommer du till flex-skärmen.'
+      description: 'Du klarade 50 rätt i rad! Nu kan du flexa med din maskot - tryck på den så kommer du till flex-skärmen.'
     },
     {
       id: 'mistakefixer',
@@ -2142,22 +2207,30 @@ var game = {
       return;
     }
     var rect = bar.getBoundingClientRect();
-    var originX = rect.left + rect.width / 2;
-    var originY = rect.top + rect.height / 2;
-    var stars = ['⭐', '🌟'];
-    var count = game.getRandomInt(14, 20);
+    game.radialBurst(document.body, rect.left + rect.width / 2, rect.top + rect.height / 2,
+      ['⭐', '🌟'], game.getRandomInt(14, 20), 50, 150, 0.7);
+  },
+
+  // Emojis som skjuts ut åt alla håll från en punkt (x, y), utlagda i container. Med edgeBox
+  // ({halfWidth, halfHeight}) räknas min/maxDistance från kanten på en ruta runt punkten istället
+  // för från punkten - då hamnar emojisarna precis utanför rutan åt alla håll, även en avlång ruta.
+  radialBurst: function(container, originX, originY, pool, count, minDistance, maxDistance, baseDuration, edgeBox){
     for (var i = 0; i < count; i++) {
-      let emoji = stars[game.getRandomInt(0, stars.length - 1)];
+      let emoji = pool[game.getRandomInt(0, pool.length - 1)];
       let el = document.createElement('span');
       el.className = 'emoji-burst-particle';
       el.textContent = emoji;
 
       let angle = Math.random() * Math.PI * 2;
-      let distance = game.getRandomInt(50, 150);
+      let distance = game.getRandomInt(minDistance, maxDistance);
+      if (edgeBox) {
+        let cos = Math.abs(Math.cos(angle)), sin = Math.abs(Math.sin(angle));
+        distance += Math.min(cos > 0.001 ? edgeBox.halfWidth / cos : Infinity, sin > 0.001 ? edgeBox.halfHeight / sin : Infinity);
+      }
       let dx = Math.round(Math.cos(angle) * distance) + 'px';
       let dy = Math.round(Math.sin(angle) * distance) + 'px';
       let rot = game.getRandomInt(-90, 90) + 'deg';
-      let duration = (0.7 + Math.random() * 0.5).toFixed(2) + 's';
+      let duration = (baseDuration + Math.random() * 0.5).toFixed(2) + 's';
       let delay = (Math.random() * 0.15).toFixed(2) + 's';
 
       el.style.setProperty('--dx', dx);
@@ -2169,7 +2242,7 @@ var game = {
       el.style.animationDuration = duration;
       el.style.animationDelay = delay;
 
-      document.body.appendChild(el);
+      container.appendChild(el);
       setTimeout(function(){
         el.remove();
       }, (parseFloat(duration) + parseFloat(delay)) * 1000 + 150);
@@ -2249,12 +2322,7 @@ var game = {
 
     $('#newQuestion').focus();
 
-    if (newlyUnlockedEmojis.length > 0) {
-      $('#emojiUnlockList').text(newlyUnlockedEmojis.join(' '));
-      $('#emojiUnlockPopup').css('display', 'flex');
-      // Flytta fokus till popupens egen knapp, annars träffar Enter "Ny fråga" som ligger dold bakom
-      $('#emojiUnlockClose').focus();
-    }
+    game.showEmojiUnlock(newlyUnlockedEmojis);
 
     // Efter emoji-popupen, så att prestations-popupen hamnar överst om båda dyker upp samtidigt
     this.checkStreakAchievements();
@@ -2314,7 +2382,11 @@ var game = {
         description: 'Du klarade ' + streak + ' rätt i rad! Nu kan du byta bakgrundsfärg - välj den under Prestationer i emojisamlingen 🙂'
       });
     }
-    game.achievements.sort(function(a, b){ return a.streak - b.streak; });
+    // Prestationer utan streak (t.ex. Felfixaren) hamnar sist
+    game.achievements.sort(function(a, b){
+      var sa = a.streak || Number.MAX_SAFE_INTEGER, sb = b.streak || Number.MAX_SAFE_INTEGER;
+      return sa - sb;
+    });
   },
 
   streakTierColors: [
